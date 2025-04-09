@@ -8,13 +8,19 @@ baseUrl = "https://busdata.cs.pdx.edu/api/getBreadCrumbs?vehicle_id="
 #reads vehicleids.txt and parses into a list for each id entry
 vehicleIds = [line.strip() for line in open("vehicleids.txt","r").readlines()]
 
+path = "./Data/" + str(datetime.date.today())
+if not os.path.exists(path):
 
-for id in vehicleIds:
-    url = baseUrl + id
-    try:
-        #retrieves the data for the assocaited ID and then download it into the Data Folder
-        request.urlretrieve(url, f"Data/{datetime.date.today()}/{datetime.date.today()}_{id}.json")
-    except error.HTTPError as e:
+    for id in vehicleIds:
+        url = baseUrl + id
+        try:
+            #retrieves the data for the assocaited ID and then download it into the Data Folder
+            os.makedirs(path, exist_ok=True)
+            request.urlretrieve(url, f"Data/{datetime.date.today()}/{datetime.date.today()}_{id}.json")
+        except error.HTTPError as e:
             print(f"{e} FOR {id}")
+else:
+    print("Data Aready Collected for: " + str(datetime.date.today()))
+
 
     
