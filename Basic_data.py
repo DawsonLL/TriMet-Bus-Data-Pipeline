@@ -39,12 +39,9 @@ if not os.path.exists(path):
     #Logs Data After Collection
     data = [{"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub/sub_message_published/recieved": pubsubCount}]
     log.dataLog(data)
+    print("Data Logging Successful")
 
 
 else:
     print("Data Aready Collected for: " + str(datetime.date.today()))
 
-field_headers = ["date","day_of_week", "time_accessed", "#_sensor_readings", "total_data_saved_(KBs)", "#_pub/sub_message_published/recieved"]
-data = [{"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub/sub_message_published/recieved": pubsubCount}]
-
-    
