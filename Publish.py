@@ -18,8 +18,8 @@ def Publish_PubSub(date):
     # in the form `projects/{project_id}/topics/{topic_id}`
     topic_path = publisher.topic_path(project_id, topic_id)
 
-    for filename in os.listdir(f"{os.getcwd()}\Data\{date}"):
-        with open(os.path.join(f"{os.getcwd()}\Data\{date}", filename), 'r') as file:
+    for filename in os.listdir(f"{os.getcwd()}/Data/{date}"):
+        with open(os.path.join(f"{os.getcwd()}/Data/{date}", filename), 'r') as file:
                 data = json.load(file)
                 for item in data:
                     # Data must be a bytestring
