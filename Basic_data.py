@@ -36,17 +36,14 @@ if not os.path.exists(path):
         except error.HTTPError as e:
             print(f"{e} FOR {id}")
             errorCount += 1 #Adds to Error Count
-    
-    
-    #publishes the files for today to the topic
-    pubsubCount = pub.Publish_PubSub(datetime.date.today())
-    
-    #Logs Data After Collection
-    data = [{"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub/sub_message_published/recieved": pubsubCount}]
-    log.dataLog(data)
-    print("Data Logging Successful")
-
-
 else:
     print("Data Aready Collected for: " + str(datetime.date.today()))
+    
+#publishes the files for today to the topic
+pubsubCount = pub.Publish_PubSub(datetime.date.today())
+
+#Logs Data After Collection
+data = [{"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub/sub_message_published/recieved": pubsubCount}]
+log.dataLog(data)
+print("Data Logging Successful")
 
