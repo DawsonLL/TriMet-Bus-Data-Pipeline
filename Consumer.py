@@ -3,6 +3,8 @@ from google.cloud import pubsub_v1
 import datetime
 import os
 import json
+import time
+from datetime import datetime
 
 # we need a while true so that the script runs indefinitely within systemd
 while True:
