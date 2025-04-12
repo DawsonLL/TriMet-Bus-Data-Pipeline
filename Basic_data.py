@@ -2,9 +2,13 @@ import urllib.request as request
 import urllib.error as error
 import datetime
 import os
+import logging
 import dataLogging as log
 import Publish as pub
 
+#configures the error logging
+logging.basicConfig(filename='error.log', level=logging.ERROR, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 #our base Url
 baseUrl = "https://busdata.cs.pdx.edu/api/getBreadCrumbs?vehicle_id="
@@ -39,11 +43,18 @@ if not os.path.exists(path):
 else:
     print("Data Aready Collected for: " + str(datetime.date.today()))
     
+
 #publishes the files for today to the topic
-pubsubCount = pub.Publish_PubSub(datetime.date.today())
+try:
+    pubsubCount = pub.Publish_PubSub(datetime.date.today())
+except Exception as e:
+    logging.error(f"An error occurred: {e}")
 
 #Logs Data After Collection
-data = [{"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub/sub_message_published/recieved": pubsubCount}]
-log.dataLog(data)
-print("Data Logging Successful")
+try:
+    data = [{"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub/sub_message_published/recieved": pubsubCount}]
+    log.dataLog(data)
+    print("Data Logging Successful")
+except Exception as e:
+    logging.error(f"An error occurred: {e}")
 

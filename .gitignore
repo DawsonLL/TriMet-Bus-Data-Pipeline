@@ -3,3 +3,5 @@
 Data
 dataLog.csv
 venv/
+Received_Data/
+error.log
