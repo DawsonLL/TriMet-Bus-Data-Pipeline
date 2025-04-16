@@ -8,8 +8,8 @@ import datetime
 def Publish_PubSub(date):
     start_time = datetime.datetime.now()
     #topic
-    project_id = "data-eng-456119"
-    topic_id = "Trimet_IHS"
+    project_id = "DataEng-S25"
+    topic_id = "my-topic"
     publish_count = 0
     futures = []
 
@@ -17,6 +17,7 @@ def Publish_PubSub(date):
     # The `topic_path` method creates a fully qualified identifier
     # in the form `projects/{project_id}/topics/{topic_id}`
     topic_path = publisher.topic_path(project_id, topic_id)
+    print(topic_path)
 
     for filename in os.listdir(f"{os.getcwd()}/Data/{date}"):
         with open(os.path.join(f"{os.getcwd()}/Data/{date}", filename), 'r') as file:
@@ -27,6 +28,7 @@ def Publish_PubSub(date):
                     future = publisher.publish(topic_path, datastr)
                     publish_count+= 1
                     futures.append(future)
+                    print(future.result())
 
     end_time = datetime.datetime.now()
     run_time = end_time - start_time
@@ -34,7 +36,7 @@ def Publish_PubSub(date):
     #wait until the futures are finished
     for future in futures:
         try:
-            future.result(timeout=30)
+            print(future.result(timeout=30))
         except TimeoutError:
             print("Publishing timed out.")
 
