@@ -74,3 +74,7 @@ while True:
             print(f"{count} messages received in {run_time}")
             streaming_pull_future.cancel()
             streaming_pull_future.result()
+            #add datalog here
+            #START TIME
+            #COUNT(pubsub recieved)
+            
