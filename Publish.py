@@ -8,8 +8,8 @@ import datetime
 def Publish_PubSub(date):
     start_time = datetime.datetime.now()
     #topic
-    project_id = "DataEng-S25"
-    topic_id = "my-topic"
+    project_id = "data-eng-456119"
+    topic_id = "Trimet_IHS"
     publish_count = 0
     futures = []
 
@@ -28,7 +28,6 @@ def Publish_PubSub(date):
                     future = publisher.publish(topic_path, datastr)
                     publish_count+= 1
                     futures.append(future)
-                    print(future.result())
 
     end_time = datetime.datetime.now()
     run_time = end_time - start_time

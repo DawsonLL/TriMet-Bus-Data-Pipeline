@@ -15,8 +15,8 @@ while True:
         f.close()
     time.sleep(10)
 
-    project_id = "dataeng-s25"
-    subscription_id = "my-sub"
+    project_id = "data-eng-4561195"
+    subscription_id = "Trimet_IHS-sub"
     timeout = 10  # seconds
     count = 0
     path = "./Received_Data/"

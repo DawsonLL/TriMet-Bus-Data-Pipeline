@@ -23,8 +23,7 @@ errorCount = 0
 currDate = datetime.date.today()
 day = currDate.strftime("%A")
 time = datetime.datetime.now().strftime("%H:%M:%S")
-sensorReadings = "n/a"
-totalData = "n/a"
+sensorReadings = 0
 pubsubCount = "n/a"
 
 
@@ -37,6 +36,7 @@ if not os.path.exists(path):
             #retrieves the data for the assocaited ID and then download it into the Data Folder
             os.makedirs(path, exist_ok=True)
             request.urlretrieve(url, f"Data/{datetime.date.today()}/{datetime.date.today()}_{id}.json")
+            sensorReadings += 1
         except error.HTTPError as e:
             print(f"{e} FOR {id}")
             errorCount += 1 #Adds to Error Count
@@ -52,7 +52,9 @@ except Exception as e:
 
 #Logs Data After Collection
 try:
-    data = [{"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub/sub_message_published/recieved": pubsubCount}]
+
+    totalData = log.folderSizeInKb(f"Data/{datetime.date.today()}")
+    data = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub/sub_message_published/recieved": pubsubCount}
     log.dataLog(data)
     print("Data Logging Successful")
 except Exception as e:
