@@ -4,19 +4,20 @@ import datetime
 import os
 import json
 import time
-from datetime import datetime
+import dataLogging as log
+
 
 # we need a while true so that the script runs indefinitely within systemd
 while True:
     # timestamps to track program
     with open("timestamp.txt", "a") as f:
-        f.write("The current timestamp is: " + str(datetime.now()))
+        f.write(f"The current timestamp is: {str(datetime.datetime.now())}\n")
         f.close()
     time.sleep(10)
 
-    project_id = "data-eng-456119"
+    project_id = "data-eng-4561195"
     subscription_id = "Trimet_IHS-sub"
-    timeout = 100  # seconds
+    timeout = 10  # seconds
     count = 0
     path = "./Received_Data/"
     log_file = os.path.join(path, f"{datetime.date.today()}.json")
@@ -74,3 +75,7 @@ while True:
             print(f"{count} messages received in {run_time}")
             streaming_pull_future.cancel()
             streaming_pull_future.result()
+            #add datalog here
+            log.consumerLog(count)
+            #COUNT(pubsub recieved)
+            
