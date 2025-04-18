@@ -5,3 +5,4 @@ dataLog.csv
 venv/
 Received_Data/
 error.log
+timestamp.txt
