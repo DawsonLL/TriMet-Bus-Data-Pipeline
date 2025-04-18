@@ -15,9 +15,9 @@ while True:
         f.close()
     time.sleep(10)
 
-    project_id = "data-eng-4561195"
+    project_id = "data-eng-456119"
     subscription_id = "Trimet_IHS-sub"
-    timeout = 10  # seconds
+    timeout = 100  # seconds
     count = 0
     path = "./Received_Data/"
     log_file = os.path.join(path, f"{datetime.date.today()}.json")
