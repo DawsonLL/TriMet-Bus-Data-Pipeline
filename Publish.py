@@ -35,7 +35,7 @@ def Publish_PubSub(date):
     #wait until the futures are finished
     for future in futures:
         try:
-            print(future.result(timeout=30))
+            future.result(timeout=30)
         except TimeoutError:
             print("Publishing timed out.")
 
