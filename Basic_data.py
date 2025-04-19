@@ -24,7 +24,8 @@ currDate = datetime.date.today()
 day = currDate.strftime("%A")
 time = datetime.datetime.now().strftime("%H:%M:%S")
 sensorReadings = 0
-pubsubCount = "n/a"
+pubCount = "n/a"
+subCount = 0
 
 
 path = "./Data/" + str(datetime.date.today())
@@ -46,7 +47,7 @@ else:
 
 #publishes the files for today to the topic
 try:
-    pubsubCount = pub.Publish_PubSub(datetime.date.today())
+    pubCount = pub.Publish_PubSub(datetime.date.today())
 except Exception as e:
     logging.error(f"An error occurred: {e}")
 
@@ -54,7 +55,7 @@ except Exception as e:
 try:
 
     totalData = log.folderSizeInKb(f"Data/{datetime.date.today()}")
-    data = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub/sub_message_published/recieved": pubsubCount}
+    data = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub_message_published": pubCount, "#_sub_message_recieved" : subCount}
     log.dataLog(data)
     print("Data Logging Successful")
 except Exception as e:

@@ -10,7 +10,8 @@ def dataLog(data):
         "time_accessed", 
         "#_sensor_readings", 
         "total_data_saved_(KBs)", 
-        "#_pub/sub_message_published/recieved"
+        "#_pub_message_published",
+        "#_sub_message_recieved"
         ]
     
     # Check if the log file exists
@@ -55,7 +56,7 @@ def consumerLog(data):
     df = pd.read_csv('dataLog.csv')
     
     # Update the value in the last row
-    df.at[df.index[-1], "#_pub/sub_message_published/recieved"] += data
+    df.at[df.index[-1], "#_sub_message_recieved"] += data
     
     # Save it back
     df.to_csv("dataLog.csv", index=False)
