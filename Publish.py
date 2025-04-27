@@ -17,7 +17,6 @@ def Publish_PubSub(date):
     # The `topic_path` method creates a fully qualified identifier
     # in the form `projects/{project_id}/topics/{topic_id}`
     topic_path = publisher.topic_path(project_id, topic_id)
-    print(topic_path)
 
     for filename in os.listdir(f"{os.getcwd()}/Data/{date}"):
         with open(os.path.join(f"{os.getcwd()}/Data/{date}", filename), 'r') as file:
@@ -35,9 +34,9 @@ def Publish_PubSub(date):
     #wait until the futures are finished
     for future in futures:
         try:
-            future.result(timeout=30)
-        except TimeoutError:
-            print("Publishing timed out.")
+            futures.wait()
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
     print(f"Published {publish_count} messages to {topic_path} in {run_time}.")
     return publish_count

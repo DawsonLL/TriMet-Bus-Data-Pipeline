@@ -52,7 +52,8 @@ while True:
                 messages = json.load(f)
                 if not isinstance(messages, list):
                     messages = []
-            except json.JSONDecodeError:
+            except Exception as e:
+                print(f"An error occurred: {e}")
                 messages = []
 
     print(f"Listening for messages on {subscription_path}..\n")
@@ -61,10 +62,8 @@ while True:
         try:
             streaming_pull_future = subscriber.subscribe(subscription_path, callback=callback)
             streaming_pull_future.result(timeout=timeout)
-        except KeyboardInterrupt:
-            print("Received shutdown signal. Stopping subscriber...")
-        except TimeoutError:
-            print("Subscription timed out.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
         finally:
             # Save all messages to a single JSON file
             with open(log_file, "w", encoding="utf-8") as f:
