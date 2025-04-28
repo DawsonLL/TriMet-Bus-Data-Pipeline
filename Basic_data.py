@@ -30,7 +30,6 @@ subCount = 0
 
 path = "./Data/" + str(datetime.date.today())
 if not os.path.exists(path):
-
     for id in vehicleIds:
         url = baseUrl + id
         try:
@@ -38,8 +37,7 @@ if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
             request.urlretrieve(url, f"Data/{datetime.date.today()}/{datetime.date.today()}_{id}.json")
             sensorReadings += 1
-        except error.HTTPError as e:
-            print(f"{e} FOR {id}")
+        except Exception as e:
             errorCount += 1 #Adds to Error Count
 else:
     print("Data Aready Collected for: " + str(datetime.date.today()))
@@ -53,9 +51,8 @@ except Exception as e:
 
 #Logs Data After Collection
 try:
-
     totalData = log.folderSizeInKb(f"Data/{datetime.date.today()}")
-    data = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub_message_published": pubCount, "#_sub_message_recieved" : subCount}
+    data = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": pubCount, "total_data_saved_(KBs)": totalData, "#_pub_message_published": pubCount, "#_sub_message_recieved" : subCount}
     log.dataLog(data)
     print("Data Logging Successful")
 except Exception as e:

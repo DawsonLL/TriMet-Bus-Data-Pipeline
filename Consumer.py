@@ -63,7 +63,7 @@ while True:
             streaming_pull_future = subscriber.subscribe(subscription_path, callback=callback)
             streaming_pull_future.result(timeout=timeout)
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print(f"{e}")
         finally:
             # Save all messages to a single JSON file
             with open(log_file, "w", encoding="utf-8") as f:
