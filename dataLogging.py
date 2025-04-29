@@ -11,7 +11,7 @@ def dataLog(data):
         "#_sensor_readings", 
         "total_data_saved_(KBs)", 
         "#_pub_message_published",
-        "#_sub_message_recieved"
+        "#_sub_message_received"
         ]
     
     # Check if the log file exists
@@ -53,10 +53,12 @@ def folderSizeInKb(folder_path):
 
 def consumerLog(data):
     # Read the CSV
-    df = pd.read_csv('dataLog.csv')
+    # df = pd.read_csv('dataLog.csv')
+    df = pd.read_csv('/home/lamlon/dataengproject/dataLog.csv')
+
     
     # Update the value in the last row
-    df.at[df.index[-1], "#_sub_message_recieved"] += data
+    df.at[df.index[-1], "#_sub_message_received"] += data
     
     # Save it back
     df.to_csv("dataLog.csv", index=False)

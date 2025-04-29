@@ -56,7 +56,7 @@ for id in vehicleIds:
 #Logs Data After Collection
 try:
     totalData = log.folderSizeInKb(f"Data/{datetime.date.today()}")
-    logData = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub_message_published": pubCount, "#_sub_message_recieved" : subCount}
+    logData = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub_message_published": pubCount, "#_sub_message_received" : subCount}
     log.dataLog(logData)
     print("Data Logging Successful")
 except Exception as e:
