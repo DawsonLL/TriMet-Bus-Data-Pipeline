@@ -53,8 +53,7 @@ def folderSizeInKb(folder_path):
 
 def consumerLog(data):
     # Read the CSV
-    # df = pd.read_csv('dataLog.csv')
-    df = pd.read_csv('/home/lamlon/dataengproject/dataLog.csv')
+    df = pd.read_csv('dataLog.csv')
 
     
     # Update the value in the last row
