@@ -1,7 +1,5 @@
-import urllib.request as request
-import urllib.error as error
+import requests
 import datetime
-import os
 import logging
 import dataLogging as log
 import Publish as pub
@@ -24,36 +22,42 @@ currDate = datetime.date.today()
 day = currDate.strftime("%A")
 time = datetime.datetime.now().strftime("%H:%M:%S")
 sensorReadings = 0
-pubCount = "n/a"
+pubCount = 0
 subCount = 0
 
+'''
+#Progress Tracker
+totalIds = len(vehicleIds)
+countIds = 0
+'''
 
-path = "./Data/" + str(datetime.date.today())
-if not os.path.exists(path):
-    for id in vehicleIds:
-        url = baseUrl + id
+
+for id in vehicleIds:
+    url = baseUrl + id
+    data = requests.get(url)
+    if data.status_code == 200:
+        '''
+        countIds += 1
+        print(f"Progress: {countIds}/{totalIds}", end='\r')
+        '''
         try:
-            #retrieves the data for the assocaited ID and then download it into the Data Folder
-            os.makedirs(path, exist_ok=True)
-            request.urlretrieve(url, f"Data/{datetime.date.today()}/{datetime.date.today()}_{id}.json")
-            sensorReadings += 1
+            data = data.json()
+            sensorReadings += len(data)
+            pubCount += pub.Publish_PubSub(data)
         except Exception as e:
             errorCount += 1 #Adds to Error Count
-else:
-    print("Data Aready Collected for: " + str(datetime.date.today()))
-    
-
-#publishes the files for today to the topic
-try:
-    pubCount = pub.Publish_PubSub(datetime.date.today())
-except Exception as e:
-    logging.error(f"An error occurred: {e}")
+            logging.error(f"An error occurred: {e}")
+    '''
+    else:
+        totalIds -= 1
+        print(f"Progress: {countIds}/{totalIds}", end='\r')
+    '''
 
 #Logs Data After Collection
 try:
     totalData = log.folderSizeInKb(f"Data/{datetime.date.today()}")
-    data = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": pubCount, "total_data_saved_(KBs)": totalData, "#_pub_message_published": pubCount, "#_sub_message_recieved" : subCount}
-    log.dataLog(data)
+    logData = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": totalData, "#_pub_message_published": pubCount, "#_sub_message_recieved" : subCount}
+    log.dataLog(logData)
     print("Data Logging Successful")
 except Exception as e:
     logging.error(f"An error occurred: {e}")
