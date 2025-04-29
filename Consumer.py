@@ -22,8 +22,8 @@ while True:
     messages = []
 
     subscriber = pubsub_v1.SubscriberClient()
-    subscription_path = subscriber.subscription_path(project_id, subscription_id)
     subscription_id = "Trimet_IHS-sub"
+    subscription_path = subscriber.subscription_path(project_id, subscription_id)
     timeout = 100  # seconds
     count = 0
     path = "./Received_Data/"
