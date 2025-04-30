@@ -55,7 +55,7 @@ for id in vehicleIds:
 
 #Logs Data After Collection
 try:
-    logData = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": 0, "#_pub_message_published": pubCount, "#_sub_message_received" : subCount}
+    logData = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": 0.0, "#_pub_message_published": pubCount, "#_sub_message_received" : subCount}
     log.dataLog(logData)
     print("Data Logging Successful")
 except Exception as e:
