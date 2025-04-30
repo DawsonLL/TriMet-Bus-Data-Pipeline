@@ -34,7 +34,7 @@ def Publish_PubSub(data):
         #add it to the list of futures
         future_list.append(future)
 
-        publish_count+= 1
+        publish_count += 1
 
     end_time = datetime.datetime.now()
     run_time = end_time - start_time
