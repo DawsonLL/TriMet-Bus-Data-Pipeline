@@ -49,7 +49,7 @@ while True:
         with open(log_file, "r", encoding="utf-8") as f:
             try:
                 messages = json.load(f)
-                log.dataSaved(os.path.getsize(log_file))
+                log.dataSaved(os.path.getsize(log_file)/1024)
                 if not isinstance(messages, list):
                     messages = []
             except Exception as e:
