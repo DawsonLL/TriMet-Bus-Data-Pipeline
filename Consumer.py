@@ -1,4 +1,3 @@
-from concurrent.futures import TimeoutError
 from google.cloud import pubsub_v1
 import datetime
 import os
@@ -20,7 +19,7 @@ while True:
     timeout = 100  # seconds
     count = 0
     path = "./Received_Data/"
-    log_file = os.path.join(path, f"{datetime.date.today()}.json")
+    log_file = path + f"{datetime.date.today()}.json"
     messages = []
 
     subscriber = pubsub_v1.SubscriberClient()
@@ -50,6 +49,7 @@ while True:
         with open(log_file, "r", encoding="utf-8") as f:
             try:
                 messages = json.load(f)
+                log.dataSaved(os.path.getsize(log_file))
                 if not isinstance(messages, list):
                     messages = []
             except Exception as e:

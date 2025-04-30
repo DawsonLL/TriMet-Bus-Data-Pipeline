@@ -40,15 +40,16 @@ def dataLog(data):
         new_df.to_csv('dataLog.csv', mode='a', header=False, index=False)
 
 
-def folderSizeInKb(folder_path):
-    total_size = 0
-    for dirpath, dirnames, filenames in os.walk(folder_path):
-        for filename in filenames:
-            filepath = os.path.join(dirpath, filename)
-            if os.path.isfile(filepath):
-                total_size += os.path.getsize(filepath)
-    return total_size / 1024  # Convert bytes to KB
+def dataSaved(size):
+    # Read the CSV
+    df = pd.read_csv('dataLog.csv')
 
+    
+    # Update the value in the last row
+    df.at[df.index[-1], "total_data_saved_(KBs)"] += size
+    
+    # Save it back
+    df.to_csv("dataLog.csv", index=False)
         
 
 def consumerLog(data):
