@@ -24,6 +24,8 @@ time = datetime.datetime.now().strftime("%H:%M:%S")
 sensorReadings = 0
 pubCount = 0
 subCount = 0
+logData = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": 0.0, "#_pub_message_published": pubCount, "#_sub_message_received" : subCount}
+log.preLoad(logData)
 
 '''
 #Progress Tracker
@@ -55,7 +57,7 @@ for id in vehicleIds:
 
 #Logs Data After Collection
 try:
-    logData = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": 0.0, "#_pub_message_published": pubCount, "#_sub_message_received" : subCount}
+    logData = {"#_sensor_readings": sensorReadings, "#_pub_message_published": pubCount}
     log.dataLog(logData)
     print("Data Logging Successful")
 except Exception as e:
