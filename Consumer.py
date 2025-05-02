@@ -5,6 +5,20 @@ import json
 import time
 import dataLogging as log
 
+def callback(message: pubsub_v1.subscriber.message.Message) -> None:
+    global count, messages
+    count += 1
+
+    msg_data = {
+        "message_id": message.message_id,
+        "data": message.data.decode("utf-8"),
+        "attributes": dict(message.attributes),
+        "publish_time": message.publish_time.isoformat()
+    }
+
+    messages.append(msg_data)
+    message.ack()
+
 
 # we need a while true so that the script runs indefinitely within systemd
 while True:
@@ -24,20 +38,6 @@ while True:
 
     subscriber = pubsub_v1.SubscriberClient()
     subscription_path = subscriber.subscription_path(project_id, subscription_id)
-
-    def callback(message: pubsub_v1.subscriber.message.Message) -> None:
-        global count, messages
-        count += 1
-
-        msg_data = {
-            "message_id": message.message_id,
-            "data": message.data.decode("utf-8"),
-            "attributes": dict(message.attributes),
-            "publish_time": message.publish_time.isoformat()
-        }
-
-        messages.append(msg_data)
-        message.ack()
 
     start_time = datetime.datetime.now()
 
