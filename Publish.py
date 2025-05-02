@@ -16,8 +16,8 @@ def future_callback(future):
 def Publish_PubSub(data):
     start_time = datetime.datetime.now()
     #topic
-    project_id = "data-eng-456119"
-    topic_id = "Trimet_IHS"
+    project_id = "dataeng-s25"
+    topic_id = "my-topic"
     publish_count = 0
     future_list = []
 
