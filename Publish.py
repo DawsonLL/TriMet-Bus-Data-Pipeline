@@ -9,7 +9,7 @@ def future_callback(future):
         # Wait for the result of the publish operation.
         future.result()  
     except Exception as e:
-        print(f"An error occurred in future_callback: {e}")
+        pass
 
 #takes the date and opens the folder corosponding to that date and reads all of the jsons in that folder
 #then publishes them to the Trimet_IHS topic

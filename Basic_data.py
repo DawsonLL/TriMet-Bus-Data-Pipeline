@@ -48,7 +48,7 @@ for id in vehicleIds:
             pubCount += pub.Publish_PubSub(data)
         except Exception as e:
             errorCount += 1 #Adds to Error Count
-            logging.error(f"An error occurred: {e}")
+            #logging.error(f"An error occurred: {e}")
     '''
     else:
         totalIds -= 1

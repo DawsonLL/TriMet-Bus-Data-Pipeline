@@ -4,6 +4,7 @@ import os
 import json
 import time
 import dataLogging as log
+import logging
 
 
 # we need a while true so that the script runs indefinitely within systemd
@@ -52,7 +53,8 @@ while True:
                 if not isinstance(messages, list):
                     messages = []
             except Exception as e:
-                print(f"An error occurred: {e}")
+                # log it into the errror.log file
+                logging.error(f"An error occurred: {e}")
                 messages = []
 
     print(f"Listening for messages on {subscription_path}..\n")
@@ -62,7 +64,7 @@ while True:
             streaming_pull_future = subscriber.subscribe(subscription_path, callback=callback)
             streaming_pull_future.result(timeout=timeout)
         except Exception as e:
-            print(f"{e}")
+            logging.error(f"An error occurred: {e}")
         finally:
             # Save all messages to a single JSON file
             with open(log_file, "w", encoding="utf-8") as f:
