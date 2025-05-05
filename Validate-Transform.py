@@ -1,7 +1,7 @@
 import pandas as pd
 import ast
 
-#convers 
+#conversts the string literal to a proper panda dataframe
 def eval_to_df(x):
     try:
         return pd.json_normalize(ast.literal_eval(x))
@@ -40,27 +40,9 @@ def Indvidual_Validation(message_data):
     if message_dic["ACT_TIME"] > 2073600:
         return False
         
-#def Validation(messages):
+def Transform(messages):
     #for index, row in messages.iterrows():
-
-error_count = 0
-
-log_file = "./Received_Data/2025-04-11.json"
-with open(log_file, "r", encoding="utf-8") as f:
-
-    #we need to pull out the nested data from the json
-    df = pd.read_json(log_file)
-    expanded = df['data'].apply(eval_to_df)
-    messages = pd.concat(expanded.tolist(), ignore_index=True)
-
-    '''
-
-    sorted_messages = messages.sort_values(by=["VEHICLE_ID", "ACT_TIME"])
-
-    for index, row in sorted_messages.iterrows():
-        print(row["VEHICLE_ID"], row["ACT_TIME"] )
-
-    '''
+    error_count = 0
 
     #split the dataframe into multiples based off ID
     vehicle_groups = {vehicle_id: group for vehicle_id, group in messages.groupby('VEHICLE_ID')}
@@ -89,4 +71,18 @@ with open(log_file, "r", encoding="utf-8") as f:
         if len(vehicle_groups[vehicle_id]) > 1:
             vehicle_groups[vehicle_id].iloc[0, vehicle_groups[vehicle_id].columns.get_loc('SPEED')] = vehicle_groups[vehicle_id].iloc[1]['SPEED']
 
+    return vehicle_groups
+
+log_file = "./Received_Data/2025-04-11.json"
+with open(log_file, "r", encoding="utf-8") as f:
+
+    #we need to pull out the nested data string from the json
+    df = pd.read_json(log_file)
+    expanded = df['data'].apply(eval_to_df)
+    messages = pd.concat(expanded.tolist(), ignore_index=True)
+
+vehicle_groups = Transform(messages)
+
+if vehicle_groups:
+    for vehicle_id in vehicle_groups:
         print(vehicle_groups[vehicle_id])
