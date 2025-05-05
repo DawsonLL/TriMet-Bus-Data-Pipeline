@@ -40,6 +40,8 @@ def Indvidual_Validation(message_data):
     if message_dic["ACT_TIME"] > 2073600:
         return False
         
+
+#SHOULD BE TRIP ID INSTEAD of vehicle_ID also we should tranform ACT TIME into tstamp before sorting by time
 def Transform(messages):
     #for index, row in messages.iterrows():
     error_count = 0
