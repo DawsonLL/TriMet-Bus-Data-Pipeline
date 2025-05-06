@@ -41,39 +41,38 @@ def Indvidual_Validation(message_data):
         return False
         
 
-#SHOULD BE TRIP ID INSTEAD of vehicle_ID also we should tranform ACT TIME into tstamp before sorting by time
 def Transform(messages):
     #for index, row in messages.iterrows():
     error_count = 0
 
     #split the dataframe into multiples based off ID
-    vehicle_groups = {vehicle_id: group for vehicle_id, group in messages.groupby('VEHICLE_ID')}
-    for vehicle_id in vehicle_groups:
-        for index, row in vehicle_groups[vehicle_id].iterrows():
+    trip_groups = {trip_id: group for trip_id, group in messages.groupby('EVENT_NO_TRIP')}
+    for trip_id in trip_groups:
+        for index, row in trip_groups[trip_id].iterrows():
             Indvidual_Validation(row)
 
-        vehicle_groups[vehicle_id].sort_values(by='ACT_TIME', inplace=True)
-
         #drops the unused columns
-        vehicle_groups[vehicle_id] = vehicle_groups[vehicle_id].drop("GPS_SATELLITES", axis='columns')
-        vehicle_groups[vehicle_id] = vehicle_groups[vehicle_id].drop("GPS_HDOP", axis='columns')
+        trip_groups[trip_id] = trip_groups[trip_id].drop("GPS_SATELLITES", axis='columns')
+        trip_groups[trip_id] = trip_groups[trip_id].drop("GPS_HDOP", axis='columns')
 
         #create the timestamp
-        vehicle_groups[vehicle_id]['TIMESTAMP'] = vehicle_groups[vehicle_id].apply(lambda row: pd.to_datetime(row['OPD_DATE'], format="%d%b%Y:%H:%M:%S") + pd.to_timedelta(row['ACT_TIME'], unit='s'), axis=1)
-        vehicle_groups[vehicle_id] = vehicle_groups[vehicle_id].drop('OPD_DATE', axis='columns')
-        vehicle_groups[vehicle_id] = vehicle_groups[vehicle_id].drop('ACT_TIME', axis='columns')
+        trip_groups[trip_id]['TIMESTAMP'] = trip_groups[trip_id].apply(lambda row: pd.to_datetime(row['OPD_DATE'], format="%d%b%Y:%H:%M:%S") + pd.to_timedelta(row['ACT_TIME'], unit='s'), axis=1)
+        trip_groups[trip_id] = trip_groups[trip_id].drop('OPD_DATE', axis='columns')
+        trip_groups[trip_id] = trip_groups[trip_id].drop('ACT_TIME', axis='columns')
+
+        trip_groups[trip_id].sort_values(by='TIMESTAMP', inplace=True)
 
         #calculates the time
-        vehicle_groups[vehicle_id]['dMETERS'] = vehicle_groups[vehicle_id].groupby("VEHICLE_ID")['METERS'].diff()
-        vehicle_groups[vehicle_id]['dTIMESTAMP'] =  vehicle_groups[vehicle_id].groupby("VEHICLE_ID")['TIMESTAMP'].diff().dt.total_seconds()
-        vehicle_groups[vehicle_id]['SPEED'] = vehicle_groups[vehicle_id].apply(lambda row: row['dMETERS'] / row['dTIMESTAMP'], axis=1)
-        vehicle_groups[vehicle_id] = vehicle_groups[vehicle_id].drop(columns=['dMETERS', 'dTIMESTAMP'])
+        trip_groups[trip_id]['dMETERS'] = trip_groups[trip_id].groupby("EVENT_NO_TRIP")['METERS'].diff()
+        trip_groups[trip_id]['dTIMESTAMP'] =  trip_groups[trip_id].groupby("EVENT_NO_TRIP")['TIMESTAMP'].diff().dt.total_seconds()
+        trip_groups[trip_id]['SPEED'] = trip_groups[trip_id].apply(lambda row: row['dMETERS'] / row['dTIMESTAMP'], axis=1)
+        trip_groups[trip_id] = trip_groups[trip_id].drop(columns=['dMETERS', 'dTIMESTAMP'])
 
         #sets the the first row speed equal to the second
-        if len(vehicle_groups[vehicle_id]) > 1:
-            vehicle_groups[vehicle_id].iloc[0, vehicle_groups[vehicle_id].columns.get_loc('SPEED')] = vehicle_groups[vehicle_id].iloc[1]['SPEED']
+        if len(trip_groups[trip_id]) > 1:
+            trip_groups[trip_id].iloc[0, trip_groups[trip_id].columns.get_loc('SPEED')] = trip_groups[trip_id].iloc[1]['SPEED']
 
-    return vehicle_groups
+    return trip_groups
 
 log_file = "./Received_Data/2025-04-11.json"
 with open(log_file, "r", encoding="utf-8") as f:
@@ -83,8 +82,8 @@ with open(log_file, "r", encoding="utf-8") as f:
     expanded = df['data'].apply(eval_to_df)
     messages = pd.concat(expanded.tolist(), ignore_index=True)
 
-vehicle_groups = Transform(messages)
+trip_groups = Transform(messages)
 
-if vehicle_groups:
-    for vehicle_id in vehicle_groups:
-        print(vehicle_groups[vehicle_id])
+if trip_groups:
+    for trip_id in trip_groups:
+        print(trip_groups[trip_id])
