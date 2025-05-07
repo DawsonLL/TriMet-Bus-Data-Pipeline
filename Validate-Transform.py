@@ -71,16 +71,22 @@ def Transform(messages):
         #sets the the first row speed equal to the second
         if len(trip_groups[trip_id]) > 1:
             trip_groups[trip_id].iloc[0, trip_groups[trip_id].columns.get_loc('SPEED')] = trip_groups[trip_id].iloc[1]['SPEED']
+        
+        trip_groups[trip_id]['route_id'] = None
+        trip_groups[trip_id]['service_key'] = None
+        trip_groups[trip_id]['direction'] = None
 
     return trip_groups
 
-log_file = "./Received_Data/2025-04-11.json"
+log_file = "./Received_Data/2025-04-16.json"
 with open(log_file, "r", encoding="utf-8") as f:
 
     #we need to pull out the nested data string from the json
     df = pd.read_json(log_file)
     expanded = df['data'].apply(eval_to_df)
     messages = pd.concat(expanded.tolist(), ignore_index=True)
+
+    #messages.to_csv("dataLog.csv", index=False)
 
 trip_groups = Transform(messages)
 
