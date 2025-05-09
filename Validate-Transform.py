@@ -1,6 +1,7 @@
 import pandas as pd
 import ast
 import logging
+import datetime
 
 #conversts the string literal to a proper panda dataframe
 def eval_to_df(x):
@@ -11,89 +12,87 @@ def eval_to_df(x):
         logging.error(f"An error occurred: {e} {x}")
 
 
-#Validation for indvidual validation, if not satisfy  return False
-def Indvidual_Validation(message_data):
-
-    column_array = ["EVENT_NO_TRIP", "EVENT_NO_STOP", "OPD_DATE", "VEHICLE_ID", "METERS", "ACT_TIME", "GPS_LONGITUDE", "GPS_LATITUDE", "GPS_SATELLITES", "GPS_HDOP"]
+#Validation for indvidual validation
+def Indvidual_Validation(message_df):
 
     #existence validation for each column
-    for column_name in column_array:
-        message_data[column_name] = message_data.get(column_name, 0)
-    
-    #GPS_LATITUDE should be between 42째N (42) to 46째 15'N (46.25)  (the rough borders of oregon)
-    message_data["GPS_LATITUDE"] = min(42, max(message_data["GPS_LATITUDE"], 46))
+    for column_name in ["EVENT_NO_TRIP", "EVENT_NO_STOP", "OPD_DATE", "VEHICLE_ID", 
+            "METERS", "ACT_TIME", "GPS_LONGITUDE", "GPS_LATITUDE", 
+            "GPS_SATELLITES", "GPS_HDOP"]:
+        if column_name not in message_df.columns:
+            message_df[column_name] = 0
 
+    #GPS_LATITUDE should be between 42째N (42) to 46째 15'N (46.25)  (the rough borders of oregon)
+    message_df['GPS_LATITUDE'] = message_df['GPS_LATITUDE'].clip(lower=42, upper=46)
     #GPS_LONGITUDE should be between 116째 45'W (-116.75) to 124째 30'W (-124.5) (the rough borders of oregon)
-    message_data["GPS_LONGITUDE"] = min(-124.5, max(message_data["GPS_LATITUDE"], -116.75))
-    
+    message_df['GPS_LONGITUDE'] = message_df['GPS_LONGITUDE'].clip(lower=-124.5, upper=-116.75)
     #ACT_TIME does not exceed 24 hours
-    message_data["ACT_TIME"] = min(message_data["ACT_TIME"], 2073600)
+    message_df['ACT_TIME'] = message_df['ACT_TIME'].clip(upper=2073600)
+    return message_df
     
     return message_data
     
 def Transform(messages):
-    #for index, row in messages.iterrows():
-    error_count = 0
 
     #There are no messages that are exact duplicates of eachother    
-    messages.drop_duplicates()
+    messages.drop_duplicates(inplace=True)
 
     #split the dataframe into multiples based off TRIP ID to make calucate them easier, then recombine them later
-    trip_groups = {trip_id: group for trip_id, group in messages.groupby('EVENT_NO_TRIP')}
-    for trip_id in trip_groups:
+    #trip_groups = {trip_id: group for trip_id, group in messages.groupby('EVENT_NO_TRIP')}
+    #for trip_id in trip_groups:
 
-        #Each EVENT_NO_TRIP is assigned to only one VEHICLE_ID 
-        trip_groups[trip_id]["VEHICLE_ID"] = trip_groups[trip_id]["VEHICLE_ID"].mode()[0]
+    #Each EVENT_NO_TRIP is assigned to only one VEHICLE_ID 
+    messages["VEHICLE_ID"] = messages.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].transform(lambda x: x.mode()[0])
 
-        for index, row in trip_groups[trip_id].iterrows():
-            trip_groups[trip_id].loc[index] = Indvidual_Validation(row)
+    messages = Indvidual_Validation(messages)
 
-        #drops the unused columns
-        trip_groups[trip_id] = trip_groups[trip_id].drop("GPS_SATELLITES", axis='columns')
-        trip_groups[trip_id] = trip_groups[trip_id].drop("GPS_HDOP", axis='columns')
+    #drops the unused columns
+    messages = messages.drop(columns=["GPS_SATELLITES", "GPS_HDOP", "EVENT_NO_STOP"])
 
-        #create the timestamp
-        trip_groups[trip_id]['TIMESTAMP'] = trip_groups[trip_id].apply(lambda row: pd.to_datetime(row['OPD_DATE'], format="%d%b%Y:%H:%M:%S") + pd.to_timedelta(row['ACT_TIME'], unit='s'), axis=1)
-        trip_groups[trip_id] = trip_groups[trip_id].drop('OPD_DATE', axis='columns')
-        trip_groups[trip_id] = trip_groups[trip_id].drop('ACT_TIME', axis='columns')
+    #create the timestamp
+    messages['TIMESTAMP'] = messages.apply(lambda row: pd.to_datetime(row['OPD_DATE'], format="%d%b%Y:%H:%M:%S") + pd.to_timedelta(row['ACT_TIME'], unit='s'), axis=1)
+    messages = messages.drop(columns=["OPD_DATE", "ACT_TIME"])
+    messages.sort_values(by=['EVENT_NO_TRIP', 'TIMESTAMP'], inplace=True)
 
-        trip_groups[trip_id].sort_values(by='TIMESTAMP', inplace=True)
+    #calculates the speed
+    messages['dMETERS'] = messages.groupby("EVENT_NO_TRIP")['METERS'].diff()
+    messages['dTIMESTAMP'] =  messages.groupby("EVENT_NO_TRIP")['TIMESTAMP'].diff().dt.total_seconds()
+    messages['SPEED'] = messages['dMETERS'] / messages['dTIMESTAMP']
+    messages = messages.drop(columns=['dMETERS', 'dTIMESTAMP', 'METERS'])
 
-        #calculates the speed
-        trip_groups[trip_id]['dMETERS'] = trip_groups[trip_id].groupby("EVENT_NO_TRIP")['METERS'].diff()
-        trip_groups[trip_id]['dTIMESTAMP'] =  trip_groups[trip_id].groupby("EVENT_NO_TRIP")['TIMESTAMP'].diff().dt.total_seconds()
-        trip_groups[trip_id]['SPEED'] = trip_groups[trip_id].apply(lambda row: row['dMETERS'] / row['dTIMESTAMP'], axis=1)
-        trip_groups[trip_id] = trip_groups[trip_id].drop(columns=['dMETERS', 'dTIMESTAMP', 'METERS'])
+    #sets the the first row speed equal to the second
+    messages['SPEED'] = messages.groupby('EVENT_NO_TRIP')['SPEED'].transform(lambda x: x.bfill())
+    
+    #create the columns we dont have values for
+    messages['route_id'] = 0
+    messages['service_key'] = 0
+    messages['direction'] = 0
 
-        #sets the the first row speed equal to the second
-        if len(trip_groups[trip_id]) > 1:
-            trip_groups[trip_id].iloc[0, trip_groups[trip_id].columns.get_loc('SPEED')] = trip_groups[trip_id].iloc[1]['SPEED']
-        
-        #create the columns we dont have values for
-        trip_groups[trip_id]['route_id'] = 0
-        trip_groups[trip_id]['service_key'] = 0
-        trip_groups[trip_id]['direction'] = 0
-
-    #recombing them into a singular dataframe
-    messages = pd.concat(trip_groups.values(), ignore_index=True)
-
-    for index, row in messages.iterrows():
-        #Speed does not exceed 120 MPH (53.6448 Meters per Second)
-        row['SPEED'] = min(row['SPEED'],53.6448)
+    #Speed does not exceed 120 MPH (53.6448 Meters per Second)
+    messages['SPEED'] = messages['SPEED'].clip(upper=53.6448)
 
     return messages
 
-
+logging.basicConfig(filename='time.log', level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 log_file = "./Received_Data/2025-04-11.json"
+
+load_time_start = datetime.datetime.now()
+length = 1
 with open(log_file, "r", encoding="utf-8") as f:
     #we need to pull out the nested data string from the json
     df = pd.read_json(log_file)
     expanded = df['data'].apply(eval_to_df)
     messages = pd.concat(expanded.tolist(), ignore_index=True)
+    length = len(messages)
+load_time_end = datetime.datetime.now()
 
+logging.info(f"Loaded in {(load_time_end-load_time_start).total_seconds()}, {length} messages loaded")
 
-
+transform_time_start = datetime.datetime.now()
 messages = Transform(messages)
+transform_time_end = datetime.datetime.now()
+logging.info(f"Loaded in {(transform_time_end-transform_time_start).total_seconds()}, {length/((transform_time_end-transform_time_start).total_seconds())}")
 
 print(messages)
