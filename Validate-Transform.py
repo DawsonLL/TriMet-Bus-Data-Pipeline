@@ -2,6 +2,8 @@ import pandas as pd
 import ast
 import logging
 import datetime
+import Load as load
+
 
 #conversts the string literal to a proper panda dataframe
 def eval_to_df(x):
@@ -76,7 +78,7 @@ def Transform(messages):
 logging.basicConfig(filename='time.log', level=logging.INFO, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-log_file = "./Received_Data/2025-04-11.json"
+log_file = "./Received_Data/2025-05-01.json"
 
 load_time_start = datetime.datetime.now()
 length = 1
@@ -94,5 +96,10 @@ transform_time_start = datetime.datetime.now()
 messages = Transform(messages)
 transform_time_end = datetime.datetime.now()
 logging.info(f"Loaded in {(transform_time_end-transform_time_start).total_seconds()}, {length/((transform_time_end-transform_time_start).total_seconds())}")
+
+
+
+messages = messages.rename(columns={'EVENT_NO_TRIP': 'trip_id', 'GPS_LONGITUDE': 'longitude', 'GPS_LATITUDE': 'latitude', 'SPEED': 'speed', 'TIMESTAMP': 'tstamp', 'VEHICLE_ID': 'vehicle_id'})
+messages.to_csv('toLoad.csv', index=False)
 
 print(messages)
