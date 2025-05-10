@@ -79,7 +79,7 @@ def Transform(messages):
 logging.basicConfig(filename='time.log', level=logging.INFO, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-log_file = "./Received_Data/2025-05-01.json"
+log_file = "./Received_Data/2025-04-11.json"
 
 load_time_start = datetime.datetime.now()
 length = 1
@@ -101,8 +101,8 @@ logging.info(f"Loaded in {(transform_time_end-transform_time_start).total_second
 
 
 messages = messages.rename(columns={'EVENT_NO_TRIP': 'trip_id', 'GPS_LONGITUDE': 'longitude', 'GPS_LATITUDE': 'latitude', 'SPEED': 'speed', 'TIMESTAMP': 'tstamp', 'VEHICLE_ID': 'vehicle_id'})
-messages.to_csv('toLoad.csv', index=False)
+#messages.to_csv('toLoad.csv', index=False)
 
-non_float_values = messages['speed'][~messages['speed'].apply(lambda x: isinstance(x, float))]
-print(messages[messages['speed'] == ''] )
-print(messages[messages['speed'].isna()] )
+conn = load.dbconnect()
+load.createTablesIfNeeded(conn)
+load.load_data(conn, messages)

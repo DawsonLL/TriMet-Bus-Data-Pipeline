@@ -62,53 +62,50 @@ def read_csv_data(filename):
     with open(filename, mode="r") as file:
         return list(csv.DictReader(file))
 
-def load_data(conn, rows):
-	with conn.cursor() as cursor:
-		print(f"Loading data from {Datafile}")
-		start = time.perf_counter()
+def load_data(conn, data):
+    with conn.cursor() as cursor:
+        start = time.perf_counter()
 
-		trip_seen = set()
-		trip_buf = io.StringIO()
-		bc_buf = io.StringIO()
+        trip_seen = set()
+        trip_buf = io.StringIO()
+        bc_buf = io.StringIO()
+          
+        for index, row in data.iterrows():
+            try:
+                trip_id = int(row['trip_id'])
 
-		with open(Datafile, mode="r") as file:
-			reader = csv.DictReader(file)
-			for row in reader:
-				try:
-					trip_id = int(row['trip_id'])
-                    
-					# Trip: Avoid duplicates
-					if trip_id not in trip_seen:
-						trip_seen.add(trip_id)
-						trip_buf.write(f"{trip_id},{int(row['route_id'])},{int(row['vehicle_id'])},{row['service_key']},{row['direction']}\n")
+                # Trip: Avoid duplicates
+                if trip_id not in trip_seen:
+                    trip_seen.add(trip_id)
+                    trip_buf.write(f"{trip_id},{int(row['route_id'])},{int(row['vehicle_id'])},{row['service_key']},{row['direction']}\n")
 
-					# BreadCrumb
-					tstamp = datetime.strptime(row['tstamp'], "%Y-%m-%d %H:%M:%S")
-					bc_buf.write(f"{tstamp},{float(row['latitude'])},{float(row['longitude'])},{float(row['speed'])},{trip_id}\n")
+                # BreadCrumb
+                tstamp = row['tstamp']
+                bc_buf.write(f"{tstamp},{float(row['latitude'])},{float(row['longitude'])},{float(row['speed'])},{trip_id}\n")
 
-				except Exception as e:
-					print(f"Skipping row {row} due to error: {e}")
+            except Exception as e:
+                print(f"Skipping row due to error: {row} {e}")
 
-		trip_buf.seek(0)
-		bc_buf.seek(0)
+        trip_buf.seek(0)
+        bc_buf.seek(0)
 
-		# COPY Trip
-		try:
-			cursor.copy_from(trip_buf, 'trip', sep=',', columns=('trip_id', 'route_id', 'vehicle_id', 'service_key', 'direction'))
-			print(f"Copied rows into Trip")
-		except Exception as e:
-			print(f"Trip copy error: {e}")
+        # COPY Trip
+        try:
+            cursor.copy_from(trip_buf, 'trip', sep=',', columns=('trip_id', 'route_id', 'vehicle_id', 'service_key', 'direction'))
+            print(f"Copied rows into Trip")
+        except Exception as e:
+            print(f"Trip copy error: {e}")
 
-		# COPY BreadCrumb
-		try:
-			cursor.copy_from(bc_buf, 'breadcrumb', sep=',', columns=('tstamp', 'latitude', 'longitude', 'speed', 'trip_id'))
-			print(f"Copied rows into BreadCrumb")
-		except Exception as e:
-			print(f"BreadCrumb copy error: {e}")
+        # COPY BreadCrumb
+        try:
+            cursor.copy_from(bc_buf, 'breadcrumb', sep=',', columns=('tstamp', 'latitude', 'longitude', 'speed', 'trip_id'))
+            print(f"Copied rows into BreadCrumb")
+        except Exception as e:
+            print(f"BreadCrumb copy error: {e}")
 
-		conn.commit()
-		elapsed = time.perf_counter() - start
-		print(f"Finished Loading. Elapsed Time: {elapsed:0.4f} seconds")
+        conn.commit()
+        elapsed = time.perf_counter() - start
+        print(f"Finished Loading. Elapsed Time: {elapsed:0.4f} seconds")
 
 def main():
     conn = dbconnect()
