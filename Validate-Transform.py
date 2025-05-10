@@ -32,8 +32,6 @@ def Indvidual_Validation(message_df):
     message_df['ACT_TIME'] = message_df['ACT_TIME'].clip(upper=2073600)
     return message_df
     
-    return message_data
-    
 def Transform(messages):
 
     #There are no messages that are exact duplicates of eachother    
@@ -63,6 +61,7 @@ def Transform(messages):
     messages = messages.drop(columns=['dMETERS', 'dTIMESTAMP', 'METERS'])
 
     #sets the the first row speed equal to the second
+
     messages['SPEED'] = messages.groupby('EVENT_NO_TRIP')['SPEED'].transform(lambda x: x.bfill())
     
     #create the columns we dont have values for
@@ -73,6 +72,8 @@ def Transform(messages):
     #Speed does not exceed 120 MPH (53.6448 Meters per Second)
     messages['SPEED'] = messages['SPEED'].clip(upper=53.6448)
 
+    #fill the speed values that don't get filled due to issues with trips with only single messages
+    messages['SPEED'] = messages['SPEED'].fillna(0)
     return messages
 
 logging.basicConfig(filename='time.log', level=logging.INFO, 
@@ -102,4 +103,6 @@ logging.info(f"Loaded in {(transform_time_end-transform_time_start).total_second
 messages = messages.rename(columns={'EVENT_NO_TRIP': 'trip_id', 'GPS_LONGITUDE': 'longitude', 'GPS_LATITUDE': 'latitude', 'SPEED': 'speed', 'TIMESTAMP': 'tstamp', 'VEHICLE_ID': 'vehicle_id'})
 messages.to_csv('toLoad.csv', index=False)
 
-print(messages)
+non_float_values = messages['speed'][~messages['speed'].apply(lambda x: isinstance(x, float))]
+print(messages[messages['speed'] == ''] )
+print(messages[messages['speed'].isna()] )

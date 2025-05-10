@@ -76,7 +76,7 @@ def load_data(conn, rows):
 			for row in reader:
 				try:
 					trip_id = int(row['trip_id'])
-
+                    
 					# Trip: Avoid duplicates
 					if trip_id not in trip_seen:
 						trip_seen.add(trip_id)
@@ -87,7 +87,7 @@ def load_data(conn, rows):
 					bc_buf.write(f"{tstamp},{float(row['latitude'])},{float(row['longitude'])},{float(row['speed'])},{trip_id}\n")
 
 				except Exception as e:
-					print(f"Skipping row due to error: {e}")
+					print(f"Skipping row {row} due to error: {e}")
 
 		trip_buf.seek(0)
 		bc_buf.seek(0)
