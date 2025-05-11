@@ -4,10 +4,10 @@ import datetime
 import io
 import dataLogging as log
 
-DBname = "postgres"
+DBname = "pipeline_db"
 DBuser = "postgres"
-DBpwd = "1234"
-Datafile = "toLoad.csv"
+DBpwd = "coJBU@6uv4U4Hq"
+
 
 def dbconnect():
     conn = psycopg2.connect(
