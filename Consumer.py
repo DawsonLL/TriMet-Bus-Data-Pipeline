@@ -57,7 +57,7 @@ while True:
 
             #load the data into the database
             conn = load.dbconnect()
-            load.createTablesIfNeeded(conn)
+            load.createTables(conn)
             load_count = load.load_data(conn, messages)
 
             end_time = datetime.datetime.now()
