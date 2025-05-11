@@ -63,17 +63,19 @@ def read_csv_data(filename):
         return list(csv.DictReader(file))
 
 def load_data(conn, data):
+
+    count = 0
+
     with conn.cursor() as cursor:
         start = time.perf_counter()
-
         trip_seen = set()
         trip_buf = io.StringIO()
         bc_buf = io.StringIO()
           
         for index, row in data.iterrows():
             try:
+                
                 trip_id = int(row['trip_id'])
-
                 # Trip: Avoid duplicates
                 if trip_id not in trip_seen:
                     trip_seen.add(trip_id)
@@ -83,6 +85,7 @@ def load_data(conn, data):
                 tstamp = row['tstamp']
                 bc_buf.write(f"{tstamp},{float(row['latitude'])},{float(row['longitude'])},{float(row['speed'])},{trip_id}\n")
 
+                count+=1
             except Exception as e:
                 print(f"Skipping row due to error: {row} {e}")
 
@@ -106,12 +109,13 @@ def load_data(conn, data):
         conn.commit()
         elapsed = time.perf_counter() - start
         print(f"Finished Loading. Elapsed Time: {elapsed:0.4f} seconds")
+        return count
 
 def main():
     conn = dbconnect()
     createTablesIfNeeded(conn)
-    data = read_csv_data(Datafile)
-    load_data(conn, data)
+    #data = read_csv_data(Datafile)
+    #load_data(conn, data)
 
 if __name__ == "__main__":
     main()

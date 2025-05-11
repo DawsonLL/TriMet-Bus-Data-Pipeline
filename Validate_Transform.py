@@ -31,15 +31,15 @@ def Indvidual_Validation(message_df):
     #ACT_TIME does not exceed 24 hours
     message_df['ACT_TIME'] = message_df['ACT_TIME'].clip(upper=2073600)
     return message_df
-    
+
 def Transform(messages):
+
+    #we need to pull out the nested data string from the json
+    messages = pd.concat([eval_to_df(item) for item in messages['data']], ignore_index=True)
 
     #There are no messages that are exact duplicates of eachother    
     messages.drop_duplicates(inplace=True)
 
-    #split the dataframe into multiples based off TRIP ID to make calucate them easier, then recombine them later
-    #trip_groups = {trip_id: group for trip_id, group in messages.groupby('EVENT_NO_TRIP')}
-    #for trip_id in trip_groups:
 
     #Each EVENT_NO_TRIP is assigned to only one VEHICLE_ID 
     messages["VEHICLE_ID"] = messages.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].transform(lambda x: x.mode()[0])
@@ -74,8 +74,13 @@ def Transform(messages):
 
     #fill the speed values that don't get filled due to issues with trips with only single messages
     messages['SPEED'] = messages['SPEED'].fillna(0)
+
+    #rename the column to match the schema
+    messages = messages.rename(columns={'EVENT_NO_TRIP': 'trip_id', 'GPS_LONGITUDE': 'longitude', 'GPS_LATITUDE': 'latitude', 'SPEED': 'speed', 'TIMESTAMP': 'tstamp', 'VEHICLE_ID': 'vehicle_id'})
+
     return messages
 
+'''
 logging.basicConfig(filename='time.log', level=logging.INFO, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -83,26 +88,22 @@ log_file = "./Received_Data/2025-04-11.json"
 
 load_time_start = datetime.datetime.now()
 length = 1
+
 with open(log_file, "r", encoding="utf-8") as f:
-    #we need to pull out the nested data string from the json
-    df = pd.read_json(log_file)
-    expanded = df['data'].apply(eval_to_df)
-    messages = pd.concat(expanded.tolist(), ignore_index=True)
+    messages = pd.read_json(log_file)
     length = len(messages)
+
 load_time_end = datetime.datetime.now()
 
 logging.info(f"Loaded in {(load_time_end-load_time_start).total_seconds()}, {length} messages loaded")
 
 transform_time_start = datetime.datetime.now()
 messages = Transform(messages)
+print(messages)
 transform_time_end = datetime.datetime.now()
 logging.info(f"Loaded in {(transform_time_end-transform_time_start).total_seconds()}, {length/((transform_time_end-transform_time_start).total_seconds())}")
-
-
-
-messages = messages.rename(columns={'EVENT_NO_TRIP': 'trip_id', 'GPS_LONGITUDE': 'longitude', 'GPS_LATITUDE': 'latitude', 'SPEED': 'speed', 'TIMESTAMP': 'tstamp', 'VEHICLE_ID': 'vehicle_id'})
-#messages.to_csv('toLoad.csv', index=False)
 
 conn = load.dbconnect()
 load.createTablesIfNeeded(conn)
 load.load_data(conn, messages)
+'''

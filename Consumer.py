@@ -1,9 +1,11 @@
 from google.cloud import pubsub_v1
 import datetime
 import os
-import json
+import pandas as pd
 import time
 import dataLogging as log
+import Load as load
+import Validate_Transform as vt
 
 def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     global count, messages
@@ -28,32 +30,17 @@ while True:
         f.close()
     time.sleep(10)
 
-    project_id = "dataeng-s25"
-    subscription_id = "my-sub"
-    timeout = 100  # seconds
+    project_id = "data-eng-456119"
+    subscription_id = "Trimet_IHS-sub"
+    timeout = 1000  # seconds
     count = 0
     path = "./Received_Data/"
-    log_file = path + f"{datetime.date.today()}.json"
     messages = []
 
     subscriber = pubsub_v1.SubscriberClient()
     subscription_path = subscriber.subscription_path(project_id, subscription_id)
 
     start_time = datetime.datetime.now()
-
-    if not os.path.exists(path):
-        os.makedirs(path, exist_ok=True)
-
-    # Load existing messages if the file exists
-    if os.path.exists(log_file):
-        with open(log_file, "r", encoding="utf-8") as f:
-            try:
-                messages = json.load(f)
-                if not isinstance(messages, list):
-                    messages = []
-            except Exception as e:
-                print(f"An error occurred: {e}")
-                messages = []
 
     print(f"Listening for messages on {subscription_path}..\n")
 
@@ -64,18 +51,23 @@ while True:
         except Exception as e:
             print(f"{e}")
         finally:
-            # Save all messages to a single JSON file
-            with open(log_file, "w", encoding="utf-8") as f:
-                json.dump(messages, f, indent=2)
+            #transform the data
+            messages = vt.Transform(pd.DataFrame(messages))
+
+            #load the data into the database
+            conn = load.dbconnect()
+            load.createTablesIfNeeded(conn)
+            load_count = load.load_data(conn, messages)
 
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             print(f"{count} messages received in {run_time}")
             streaming_pull_future.cancel()
             streaming_pull_future.result()
+
             #add datalog here
             log.consumerLog(count)
-            log.dataSaved(os.path.getsize(log_file)/1024)
+            log.dataSaved(messages.memory_usage(index=True).sum()/1024)
 
             #COUNT(pubsub recieved)
             
