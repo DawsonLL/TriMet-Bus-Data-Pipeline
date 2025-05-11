@@ -1,9 +1,8 @@
 import time
 import psycopg2
-import csv
-from datetime import datetime
+import datetime
 import io
-import pandas as pd
+import dataLogging as log
 
 DBname = "postgres"
 DBuser = "postgres"
@@ -20,7 +19,7 @@ def dbconnect():
     conn.autocommit = True
     return conn
 
-def createTablesIfNeeded(conn):
+def createTables(conn):
     with conn.cursor() as cursor:
         # Only check for one table's existence, assuming both are created together
         cursor.execute("""
@@ -57,20 +56,19 @@ def createTablesIfNeeded(conn):
         """)
         print("Created Trip and BreadCrumb tables.")
 
-def read_csv_data(filename):
-    print(f"Reading from file: {filename}")
-    with open(filename, mode="r") as file:
-        return list(csv.DictReader(file))
-
 def load_data(conn, data):
 
+    startDate = datetime.date.today()
+    day = startDate.strftime("%A")
     count = 0
 
     with conn.cursor() as cursor:
-        start = time.perf_counter()
         trip_seen = set()
         trip_buf = io.StringIO()
         bc_buf = io.StringIO()
+        trip_count = 0
+        bc_count = 0
+        skipped_count = 0
           
         for index, row in data.iterrows():
             try:
@@ -80,14 +78,16 @@ def load_data(conn, data):
                 if trip_id not in trip_seen:
                     trip_seen.add(trip_id)
                     trip_buf.write(f"{trip_id},{int(row['route_id'])},{int(row['vehicle_id'])},{row['service_key']},{row['direction']}\n")
+                    trip_count += 1
 
                 # BreadCrumb
                 tstamp = row['tstamp']
                 bc_buf.write(f"{tstamp},{float(row['latitude'])},{float(row['longitude'])},{float(row['speed'])},{trip_id}\n")
-
+                bc_count += 1
                 count+=1
             except Exception as e:
                 print(f"Skipping row due to error: {row} {e}")
+                skipped_count += 1
 
         trip_buf.seek(0)
         bc_buf.seek(0)
@@ -107,15 +107,8 @@ def load_data(conn, data):
             print(f"BreadCrumb copy error: {e}")
 
         conn.commit()
-        elapsed = time.perf_counter() - start
-        print(f"Finished Loading. Elapsed Time: {elapsed:0.4f} seconds")
+        #elapsed = time.perf_counter() - startDate
+        #print(f"Finished Loading. Elapsed Time: {elapsed:0.4f} seconds")
+        dbData = {"date": startDate, "day_of_week": day, "#_sensor_readings": len(data), "#_rows_added_trip" : trip_count, "#_rows_added_bread": bc_count, "total_rows_added": trip_count+bc_count, "#_rows_skipped": skipped_count}
+        log.updateDBLog(dbData)
         return count
-
-def main():
-    conn = dbconnect()
-    createTablesIfNeeded(conn)
-    #data = read_csv_data(Datafile)
-    #load_data(conn, data)
-
-if __name__ == "__main__":
-    main()

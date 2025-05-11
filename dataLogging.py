@@ -80,3 +80,29 @@ def consumerLog(data):
     
     # Save it back
     df.to_csv("dataLog.csv", index=False)
+
+
+def createDBLog():
+    print("Creating databaseLog.csv...")
+    columns = [
+        "date",
+        "day_of_week", 
+        "#_sensor_readings", 
+        "#_rows_added_trip", 
+        "#_rows_added_bread",
+        "total_rows_added", 
+        "#_rows_skipped", 
+        ]
+    df = pd.DataFrame(columns=columns)
+    df.to_csv("dbLog.csv", index=False)
+
+def updateDBLog(data):
+    df = pd.DataFrame([data])
+    # Increment specific columns in the last row
+    try:
+        df.to_csv('dbLog.csv', mode='a', header=False, index=False)
+        print("Updated dbLog.csv")
+    except Exception as e:
+        createDBLog()
+        df.to_csv('dbLog.csv', mode='a', header=False, index=False)
+        print("Updated dbLog.csv")

@@ -83,8 +83,8 @@ def Transform(messages):
 '''
 logging.basicConfig(filename='time.log', level=logging.INFO, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
-
-log_file = "./Received_Data/2025-04-11.json"
+'''
+log_file = "./Received_Data/2025-05-01.json"
 
 load_time_start = datetime.datetime.now()
 length = 1
@@ -104,6 +104,5 @@ transform_time_end = datetime.datetime.now()
 logging.info(f"Loaded in {(transform_time_end-transform_time_start).total_seconds()}, {length/((transform_time_end-transform_time_start).total_seconds())}")
 
 conn = load.dbconnect()
-load.createTablesIfNeeded(conn)
+load.createTables(conn)
 load.load_data(conn, messages)
-'''
