@@ -94,14 +94,14 @@ def load_data(conn, data):
 
         # COPY Trip
         try:
-            cursor.copy_from(trip_buf, 'trip', sep=',', columns=('trip_id', 'route_id', 'vehicle_id', 'service_key', 'direction'))
+            cursor.copy_from(trip_buf, 'trip', sep=',', null='', columns=('trip_id', 'route_id', 'vehicle_id', 'service_key', 'direction'))
             print(f"Copied rows into Trip")
         except Exception as e:
             print(f"Trip copy error: {e}")
 
         # COPY BreadCrumb
         try:
-            cursor.copy_from(bc_buf, 'breadcrumb', sep=',', columns=('tstamp', 'latitude', 'longitude', 'speed', 'trip_id'))
+            cursor.copy_from(bc_buf, 'breadcrumb', sep=',', null='', columns=('tstamp', 'latitude', 'longitude', 'speed', 'trip_id'))
             print(f"Copied rows into BreadCrumb")
         except Exception as e:
             print(f"BreadCrumb copy error: {e}")

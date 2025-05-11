@@ -83,8 +83,8 @@ def Transform(messages):
     
     # Create the columns we don't have values for in place
     messages['route_id'] = 0
-    messages['service_key'] = 0
-    messages['direction'] = 0
+    messages['service_key'] = ''
+    messages['direction'] = ''
 
     # Speed should not exceed 120 MPH (53.6448 Meters per Second) in place
     messages['SPEED'] = messages['SPEED'].clip(upper=53.6448)
