@@ -9,7 +9,7 @@ import datetime
 logging.basicConfig(filename='time.log', level=logging.INFO, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 read_count = 0
-completed = ["2025-05-05.json", "2025-05-02.json", "2025-05-03.json", '2025-05-04.json', '2025-04-28.json', '2025-05-09.json', '2025-05-01.json', '2025-05-06.json', '2025-05-10.json']
+completed = []
 
 
 for folder_path in ['./Received_Data', '/Received_Data']:
@@ -18,7 +18,7 @@ for folder_path in ['./Received_Data', '/Received_Data']:
         for filename in os.listdir(folder_path):
             if filename.endswith('.json') and filename not in completed:
                 print(f"LOADING {filename}")
-                
+
                 read_count = 0
                 load_time_start = datetime.datetime.now()
 
