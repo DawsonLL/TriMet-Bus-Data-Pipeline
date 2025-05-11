@@ -79,30 +79,3 @@ def Transform(messages):
     messages = messages.rename(columns={'EVENT_NO_TRIP': 'trip_id', 'GPS_LONGITUDE': 'longitude', 'GPS_LATITUDE': 'latitude', 'SPEED': 'speed', 'TIMESTAMP': 'tstamp', 'VEHICLE_ID': 'vehicle_id'})
 
     return messages
-
-'''
-logging.basicConfig(filename='time.log', level=logging.INFO, 
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-'''
-log_file = "./Received_Data/2025-05-01.json"
-
-load_time_start = datetime.datetime.now()
-length = 1
-
-with open(log_file, "r", encoding="utf-8") as f:
-    messages = pd.read_json(log_file)
-    length = len(messages)
-
-load_time_end = datetime.datetime.now()
-
-logging.info(f"Loaded in {(load_time_end-load_time_start).total_seconds()}, {length} messages loaded")
-
-transform_time_start = datetime.datetime.now()
-messages = Transform(messages)
-print(messages)
-transform_time_end = datetime.datetime.now()
-logging.info(f"Loaded in {(transform_time_end-transform_time_start).total_seconds()}, {length/((transform_time_end-transform_time_start).total_seconds())}")
-
-conn = load.dbconnect()
-load.createTables(conn)
-load.load_data(conn, messages)

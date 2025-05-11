@@ -36,4 +36,3 @@ for folder_path in ['./Received_Data', '/Received_Data']:
                     load_count = load.load_data(conn, messages)
 
                     logging.info(f"Transformed {filename}, {read_count}, {load_count}, in {(transform_time_end-transform_time_start).total_seconds()} at a rate of {read_count/((transform_time_end-transform_time_start).total_seconds())} messages per second")
-
