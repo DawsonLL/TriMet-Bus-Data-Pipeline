@@ -6,6 +6,7 @@ import time
 import dataLogging as log
 import Load as load
 import Validate_Transform as vt
+import logging
 
 def callback(message: pubsub_v1.subscriber.message.Message) -> None:
     global count, messages
@@ -32,7 +33,7 @@ while True:
 
     project_id = "data-eng-456119"
     subscription_id = "Trimet_IHS-sub"
-    timeout = 1000  # seconds
+    timeout = 3000  # seconds
     count = 0
     path = "./Received_Data/"
     messages = []
