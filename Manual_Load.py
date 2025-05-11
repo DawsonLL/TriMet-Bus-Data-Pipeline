@@ -13,9 +13,10 @@ load_time_start = datetime.datetime.now()
 read_count = 1
 for folder_path in ['./Received_Data', '/Received_Data']:
     if os.path.exists(folder_path):
+        print(f"{folder_path} exists")
         for filename in os.listdir(folder_path):
-            print(f"LOADING {filename}")
             if filename.endswith('.json'):
+                print(f"LOADING {filename}")
                 file_path = os.path.join(folder_path, filename)
                 with open(file_path, 'r', encoding='utf-8') as f:
 
