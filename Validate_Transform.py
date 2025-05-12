@@ -132,6 +132,7 @@ def assert_lat_range(df):
         print(f"Found {total} values not in range of 42 and 46!")
         df['GPS_LATITUDE'] = df['GPS_LATITUDE'].clip(lower=42, upper=46)
         return df
+    return df
     
 def assert_long_range(df):
     lower = (df['GPS_LONGITUDE'] < -124.5 ).sum()
@@ -143,6 +144,7 @@ def assert_long_range(df):
         print(f"Found {total} values not in range of -124.5 and -116.75!")
         df['GPS_LONGITUDE'] = df['GPS_LONGITUDE'].clip(lower=-124.5, upper=-116.75)
         return df
+    return df
 
 def assert_acttime_48(df):
     greater = (df['ACT_TIME'] > 4147200 ).sum()
@@ -152,6 +154,7 @@ def assert_acttime_48(df):
         print(f"Found {greater} trip(s) longer than 48 hours!")
         df['ACT_TIME'] = df['ACT_TIME'].clip(upper= 4147200)
         return df
+    return df
     
 def assert_one_breadcrumb(df):
     unique_rows = len(df[df['EVENT_NO_TRIP'].map(df['EVENT_NO_TRIP'].value_counts()) == 1])
@@ -161,3 +164,4 @@ def assert_one_breadcrumb(df):
         print(f"Found {unique_rows} trips with 1 breadcrumb!")
         df = df[df['DEVICE_ID'].map(df['DEVICE_ID'].value_counts()) > 1]
         return df
+    return df
