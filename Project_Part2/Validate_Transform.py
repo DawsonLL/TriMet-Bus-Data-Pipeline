@@ -66,7 +66,8 @@ def Transform(messages):
     messages.drop_duplicates(inplace=True)
 
     # Each EVENT_NO_TRIP is assigned to only one VEHICLE_ID
-    messages["VEHICLE_ID"] = messages.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].transform(lambda x: x.mode()[0])
+    # messages["VEHICLE_ID"] = messages.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].transform(lambda x: x.mode()[0])
+    messages = assert_unique_vehicle_per_trip(messages)
 
     # Perform individual validation in place
     Indvidual_Validation(messages)
@@ -96,10 +97,7 @@ def Transform(messages):
     messages['direction'] = ''
 
     # Speed should not exceed 120 MPH (53.6448 Meters per Second) in place
-    messages['SPEED'] = messages['SPEED'].clip(upper=53.6448)
-
-    # Fill the speed values that don't get filled due to issues with trips with only single messages
-    messages['SPEED'] = messages['SPEED'].fillna(0)
+    messages = assert_speed_cap(messages)
 
     # Rename the column to match the schema in place
     messages.rename(columns={'EVENT_NO_TRIP': 'trip_id', 'GPS_LONGITUDE': 'longitude', 'GPS_LATITUDE': 'latitude', 'SPEED': 'speed', 'TIMESTAMP': 'tstamp', 'VEHICLE_ID': 'vehicle_id'}, inplace=True)
@@ -165,5 +163,24 @@ def assert_one_breadcrumb(df):
     except AssertionError as e:
         print(f"Found {unique_rows} trips with 1 breadcrumb!")
         df = df[df['EVENT_NO_TRIP'].map(df['EVENT_NO_TRIP'].value_counts()) > 1]
+        return df
+    return df
+
+
+def assert_speed_cap(df):
+    speed = (df['SPEED'] > 53.6448 ).sum()
+    try:
+        assert speed == 0
+    except AssertionError as e:
+        df['SPEED'] = df['SPEED'].clip(upper= 53.6448)
+        return df
+    return df
+
+def assert_unique_vehicle_per_trip(df):
+    try:
+        assert df.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].nunique().le(1).all()
+    except AssertionError as e:
+        print("Some EVENT_NO_TRIP values are associated with multiple VEHICLE_IDs")
+        df["VEHICLE_ID"] = df.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].transform(lambda x: x.mode()[0])
         return df
     return df
