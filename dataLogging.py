@@ -85,6 +85,7 @@ def consumerLog(data):
 def createDBLog():
     print("Creating databaseLog.csv...")
     columns = [
+        "file_name"
         "date",
         "day_of_week", 
         "#_sensor_readings", 

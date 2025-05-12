@@ -34,6 +34,6 @@ for folder_path in ['./Patched_Data']:
                 #load the data into the database
                 conn = load.dbconnect()
                 load.createTables(conn)
-                load_count = load.load_data(conn, messages)
+                load_count = load.load_data(conn, messages, filename)
 
                 logging.info(f"Transformed {filename}, {read_count}, {0}, in {(transform_time_end-transform_time_start).total_seconds()} at a rate of {read_count/((transform_time_end-transform_time_start).total_seconds())} messages per second")

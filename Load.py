@@ -56,7 +56,7 @@ def createTables(conn):
         """)
         print("Created Trip and BreadCrumb tables.")
 
-def load_data(conn, data):
+def load_data(conn, data, filename):
 
     startDate = datetime.date.today()
     day = startDate.strftime("%A")
@@ -109,6 +109,6 @@ def load_data(conn, data):
         conn.commit()
         #elapsed = time.perf_counter() - startDate
         #print(f"Finished Loading. Elapsed Time: {elapsed:0.4f} seconds")
-        dbData = {"date": startDate, "day_of_week": day, "#_sensor_readings": len(data), "#_rows_added_trip" : trip_count, "#_rows_added_bread": bc_count, "total_rows_added": trip_count+bc_count, "#_rows_skipped": skipped_count}
+        dbData = {"file_name": filename, "date": startDate, "day_of_week": day, "#_sensor_readings": len(data), "#_rows_added_trip" : trip_count, "#_rows_added_bread": bc_count, "total_rows_added": trip_count+bc_count, "#_rows_skipped": skipped_count}
         log.updateDBLog(dbData)
         return count
