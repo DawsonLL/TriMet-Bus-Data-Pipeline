@@ -166,15 +166,6 @@ def assert_one_breadcrumb(df):
         return df
     return df
 
-def assert_one_breadcrumb(df):
-    unique_rows = len(df[df['EVENT_NO_TRIP'].map(df['EVENT_NO_TRIP'].value_counts()) == 1])
-    try:
-        assert unique_rows == 0
-    except AssertionError as e:
-        print(f"Found {unique_rows} trips with 1 breadcrumb!")
-        df = df[df['DEVICE_ID'].map(df['DEVICE_ID'].value_counts()) > 1]
-        return df
-    return df
 
 def assert_speed_cap(df):
     speed = (df['SPEED'] > 53.6448 ).sum()
