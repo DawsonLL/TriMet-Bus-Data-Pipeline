@@ -108,79 +108,101 @@ def Transform(messages):
 
 #-----------------------------------------------------------------Assertions---------------------------------------------------------------------------
 
+# Check for null values in specified columns and drop rows with nulls if found
 def assert_nulls(df, columns):
     for column in columns:
-
+        # Count non-null values and total values in the column
         idNullCount = df[column].notnull().sum()
         totalIdCount = len(df)
 
         try:
+            # Assert there are no nulls
             assert idNullCount == totalIdCount
         except AssertionError as e:
+            # Print how many nulls were found and drop them
             print(f"Found {totalIdCount - idNullCount} null values in {column}!")
             df = df.dropna(subset=[column])
         
     return df
 
+# Ensure GPS_LATITUDE values are within the range [42, 46]
 def assert_lat_range(df):
+    # Count values outside the valid latitude range
     lower = (df['GPS_LATITUDE'] < 42 ).sum()
     upper = (df['GPS_LATITUDE'] > 46).sum()
     total = lower + upper
     try:
+        # Assert all latitudes are within range
         assert total == 0
     except AssertionError as e:
         print(f"Found {total} values not in range of 42 and 46!")
+        # Clip values to bring them within the valid range
         df['GPS_LATITUDE'] = df['GPS_LATITUDE'].clip(lower=42, upper=46)
         return df
     return df
-    
+
+# Ensure GPS_LONGITUDE values are within the range [-124.5, -116.75]
 def assert_long_range(df):
+    # Count values outside the valid longitude range
     lower = (df['GPS_LONGITUDE'] < -124.5 ).sum()
     upper = (df['GPS_LONGITUDE'] > -116.75).sum()
     total = lower + upper
     try:
+        # Assert all longitudes are within range
         assert total == 0
     except AssertionError as e:
         print(f"Found {total} values not in range of -124.5 and -116.75!")
+        # Clip values to bring them within the valid range
         df['GPS_LONGITUDE'] = df['GPS_LONGITUDE'].clip(lower=-124.5, upper=-116.75)
         return df
     return df
 
+# Ensure ACT_TIME values do not exceed 48 hours (in seconds)
 def assert_acttime_48(df):
+    # Count values that exceed the 48-hour threshold (4147200 seconds)
     greater = (df['ACT_TIME'] > 4147200 ).sum()
     try:
         assert greater == 0
     except AssertionError as e:
         print(f"Found {greater} trip(s) longer than 48 hours!")
-        df['ACT_TIME'] = df['ACT_TIME'].clip(upper= 4147200)
+        # Clip any excessive ACT_TIME values to 48 hours
+        df['ACT_TIME'] = df['ACT_TIME'].clip(upper=4147200)
         return df
     return df
-    
+
+# Ensure each trip (EVENT_NO_TRIP) has more than one breadcrumb
 def assert_one_breadcrumb(df):
+    # Count the number of trips that have only 1 breadcrumb
     unique_rows = len(df[df['EVENT_NO_TRIP'].map(df['EVENT_NO_TRIP'].value_counts()) == 1])
     try:
         assert unique_rows == 0
     except AssertionError as e:
         print(f"Found {unique_rows} trips with 1 breadcrumb!")
+        # Filter out trips with only 1 breadcrumb
         df = df[df['EVENT_NO_TRIP'].map(df['EVENT_NO_TRIP'].value_counts()) > 1]
         return df
     return df
 
-
+# Cap SPEED values at a maximum of 53.6448
 def assert_speed_cap(df):
+    # Count speed values over the threshold
     speed = (df['SPEED'] > 53.6448 ).sum()
     try:
         assert speed == 0
     except AssertionError as e:
-        df['SPEED'] = df['SPEED'].clip(upper= 53.6448)
+        # Clip speed values above the threshold
+        df['SPEED'] = df['SPEED'].clip(upper=53.6448)
         return df
     return df
 
+# Ensure each trip (EVENT_NO_TRIP) is associated with only one VEHICLE_ID
 def assert_unique_vehicle_per_trip(df):
     try:
+        # Group by trip and check for multiple vehicle IDs
         assert df.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].nunique().le(1).all()
     except AssertionError as e:
         print("Some EVENT_NO_TRIP values are associated with multiple VEHICLE_IDs")
+        # Fix by replacing with the most frequent (mode) VEHICLE_ID for each trip
         df["VEHICLE_ID"] = df.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].transform(lambda x: x.mode()[0])
         return df
     return df
