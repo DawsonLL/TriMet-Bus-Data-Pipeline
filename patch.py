@@ -10,7 +10,7 @@ import json
 read_count = 0
 completed = []
 
-
+#patches the data to pull out all of the datastrings into their own json
 for folder_path in ['./Received_Data', '/Received_Data']:
     if os.path.exists(folder_path):
         print(f"{folder_path} exists")
