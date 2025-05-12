@@ -34,18 +34,25 @@ def process_messages_in_chunks(messages, chunk_size=1000):
 def Indvidual_Validation(message_df):
 
     # Existence validation for each column
-    for column_name in ["EVENT_NO_TRIP", "EVENT_NO_STOP", "OPD_DATE", "VEHICLE_ID", 
-            "METERS", "ACT_TIME", "GPS_LONGITUDE", "GPS_LATITUDE", 
-            "GPS_SATELLITES", "GPS_HDOP"]:
-        if column_name not in message_df.columns:
-            message_df[column_name] = 0
+    columns = ["EVENT_NO_TRIP", 
+               "EVENT_NO_STOP", 
+               "OPD_DATE", 
+               "VEHICLE_ID", 
+               "METERS", 
+               "ACT_TIME", 
+               "GPS_LONGITUDE", 
+               "GPS_LATITUDE", 
+               "GPS_SATELLITES", 
+               "GPS_HDOP"]
 
+    message_df = assert_nulls(message_df, columns)
     # GPS_LATITUDE should be between 42N (42) to 4615'N (46.25) (the rough borders of Oregon)
-    message_df['GPS_LATITUDE'] = message_df['GPS_LATITUDE'].clip(lower=42, upper=46)
+    message_df = assert_lat_range(message_df)
     # GPS_LONGITUDE should be between 116 45'W (-116.75) to 124 30'W (-124.5) (the rough borders of Oregon)
-    message_df['GPS_LONGITUDE'] = message_df['GPS_LONGITUDE'].clip(lower=-124.5, upper=-116.75)
-    # ACT_TIME does not exceed 24 hours
-    message_df['ACT_TIME'] = message_df['ACT_TIME'].clip(upper=2073600)
+    message_df= assert_long_range(message_df)
+    # ACT_TIME does not exceed 48 hours
+    message_df = assert_acttime_48(message_df)
+
     return message_df
 
 def Transform(messages):
@@ -96,3 +103,61 @@ def Transform(messages):
     messages.rename(columns={'EVENT_NO_TRIP': 'trip_id', 'GPS_LONGITUDE': 'longitude', 'GPS_LATITUDE': 'latitude', 'SPEED': 'speed', 'TIMESTAMP': 'tstamp', 'VEHICLE_ID': 'vehicle_id'}, inplace=True)
 
     return messages
+
+
+
+#-----------------------------------------------------------------Assertions---------------------------------------------------------------------------
+
+def assert_nulls(df, columns):
+    for column in columns:
+
+        idNullCount = df[column].notnull().sum()
+        totalIdCount = len(df)
+
+        try:
+            assert idNullCount == totalIdCount
+        except AssertionError as e:
+            print(f"Found {totalIdCount - idNullCount} null values in {column}!")
+            df = df.dropna(subset=[column])
+        
+    return df
+
+def assert_lat_range(df):
+    lower = (df['GPS_LATITUDE'] < 42 ).sum()
+    upper = (df['GPS_LATITUDE'] > 46).sum()
+    total = lower + upper
+    try:
+        assert total == 0
+    except AssertionError as e:
+        print(f"Found {total} values not in range of 42 and 46!")
+        df['GPS_LATITUDE'] = df['GPS_LATITUDE'].clip(lower=42, upper=46)
+        return df
+    
+def assert_long_range(df):
+    lower = (df['GPS_LONGITUDE'] < -124.5 ).sum()
+    upper = (df['GPS_LONGITUDE'] > -116.75).sum()
+    total = lower + upper
+    try:
+        assert total == 0
+    except AssertionError as e:
+        print(f"Found {total} values not in range of -124.5 and -116.75!")
+        df['GPS_LONGITUDE'] = df['GPS_LONGITUDE'].clip(lower=-124.5, upper=-116.75)
+        return df
+
+def assert_acttime_48(df):
+    greater = (df['ACT_TIME'] > 4147200 ).sum()
+    try:
+        assert greater == 0
+    except AssertionError as e:
+        print(f"Found {greater} trip(s) longer than 48 hours!")
+        df['ACT_TIME'] = df['ACT_TIME'].clip(upper= 4147200)
+        return df
+    
+def assert_one_breadcrumb(df):
+    unique_rows = len(df[df['EVENT_NO_TRIP'].map(df['EVENT_NO_TRIP'].value_counts()) == 1])
+    try:
+        assert unique_rows == 0
+    except AssertionError as e:
+        print(f"Found {unique_rows} trips with 1 breadcrumb!")
+        df = df[df['DEVICE_ID'].map(df['DEVICE_ID'].value_counts()) > 1]
+        return df
