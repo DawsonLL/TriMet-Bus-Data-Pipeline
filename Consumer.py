@@ -1,6 +1,7 @@
 from google.cloud import pubsub_v1
 import datetime
 import os
+import json
 import pandas as pd
 import time
 import dataLogging as log
@@ -53,7 +54,10 @@ while True:
             logging.error(f"An error occurred: {e}")
         finally:
             #transform the data
-            messages = vt.Transform(pd.DataFrame(messages))
+            messages = pd.DataFrame(messages)
+            #pulls the datastring out of the json
+            messages = pd.json_normalize(messages['data'].apply(json.loads))
+            messages = vt.Transform(messages)
 
             #load the data into the database
             conn = load.dbconnect()

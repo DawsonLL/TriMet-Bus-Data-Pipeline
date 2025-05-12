@@ -1,5 +1,4 @@
 import os
-import json
 import pandas as pd
 import Validate_Transform as vt
 import Load as load
@@ -12,7 +11,7 @@ read_count = 0
 completed = []
 
 
-for folder_path in ['./Received_Data', '/Received_Data']:
+for folder_path in ['./Patched_Data']:
     if os.path.exists(folder_path):
         print(f"{folder_path} exists")
         for filename in os.listdir(folder_path):
@@ -23,20 +22,18 @@ for folder_path in ['./Received_Data', '/Received_Data']:
                 load_time_start = datetime.datetime.now()
 
                 file_path = os.path.join(folder_path, filename)
-                with open(file_path, 'r', encoding='utf-8') as f:
+                transform_time_start = datetime.datetime.now()
+                messages = pd.read_json(file_path)
+                messages = vt.Transform(pd.DataFrame(messages))
 
-                    transform_time_start = datetime.datetime.now()
+                read_count = messages.size
+                
+                transform_time_end = datetime.datetime.now()
+    
 
-                    messages = json.load(f)
-                    messages = vt.Transform(pd.DataFrame(messages))
+                #load the data into the database
+                conn = load.dbconnect()
+                load.createTables(conn)
+                load_count = load.load_data(conn, messages)
 
-                    read_count = len(messages)
-                    
-                    transform_time_end = datetime.datetime.now()
-                    
-                    #load the data into the database
-                    conn = load.dbconnect()
-                    load.createTables(conn)
-                    load_count = load.load_data(conn, messages)
-
-                    logging.info(f"Transformed {filename}, {read_count}, {0}, in {(transform_time_end-transform_time_start).total_seconds()} at a rate of {read_count/((transform_time_end-transform_time_start).total_seconds())} messages per second")
+                logging.info(f"Transformed {filename}, {read_count}, {0}, in {(transform_time_end-transform_time_start).total_seconds()} at a rate of {read_count/((transform_time_end-transform_time_start).total_seconds())} messages per second")
