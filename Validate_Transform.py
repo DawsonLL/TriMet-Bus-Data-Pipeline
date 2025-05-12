@@ -52,6 +52,8 @@ def Indvidual_Validation(message_df):
     message_df= assert_long_range(message_df)
     # ACT_TIME does not exceed 48 hours
     message_df = assert_acttime_48(message_df)
+    #Each Trip_ID should have more than one breadcrumb associated with it
+    message_df = assert_one_breadcrumb(message_df)
 
     return message_df
 
@@ -162,6 +164,6 @@ def assert_one_breadcrumb(df):
         assert unique_rows == 0
     except AssertionError as e:
         print(f"Found {unique_rows} trips with 1 breadcrumb!")
-        df = df[df['DEVICE_ID'].map(df['DEVICE_ID'].value_counts()) > 1]
+        df = df[df['EVENT_NO_TRIP'].map(df['EVENT_NO_TRIP'].value_counts()) > 1]
         return df
     return df
