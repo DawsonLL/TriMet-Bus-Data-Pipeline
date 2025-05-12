@@ -58,7 +58,7 @@ def Indvidual_Validation(message_df):
 def Transform(messages):
 
     # We need to pull out the nested data string from the JSON
-    messages = process_messages_in_chunks(messages)
+    #messages = process_messages_in_chunks(messages)
 
     # Remove exact duplicates in place
     messages.drop_duplicates(inplace=True)
