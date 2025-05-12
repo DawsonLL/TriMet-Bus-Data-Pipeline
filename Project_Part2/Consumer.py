@@ -34,7 +34,7 @@ while True:
 
     project_id = "data-eng-456119"
     subscription_id = "Trimet_IHS-sub"
-    timeout = 3000  # seconds
+    timeout = 2000  # seconds
     count = 0
     path = "./Received_Data/"
     messages = []
