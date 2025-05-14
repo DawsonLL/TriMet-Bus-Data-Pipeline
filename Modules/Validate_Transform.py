@@ -2,7 +2,7 @@ import pandas as pd
 import ast
 import logging
 import datetime
-import Load as load
+import Modules.Load as load
 
 # Converts the string literal to a proper pandas DataFrame
 def eval_to_df(x):
