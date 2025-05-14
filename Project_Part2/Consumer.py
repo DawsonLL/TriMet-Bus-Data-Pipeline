@@ -54,6 +54,8 @@ while True:
             logging.error(f"An error occurred: {e}")
         finally:
             #transform the data
+            print("time")
+
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             print(f"{count} messages received in {run_time}")
@@ -69,6 +71,7 @@ while True:
             conn = load.dbconnect()
             load.createTables(conn)
             load_count = load.load_data(conn, messages, f"{datetime.date.today()}")
+
 
             #add datalog here
             log.consumerLog(count)
