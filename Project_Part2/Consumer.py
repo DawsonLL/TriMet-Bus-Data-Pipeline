@@ -4,9 +4,9 @@ import os
 import json
 import pandas as pd
 import time
-import Modules.dataLogging as log
-import Modules.Load as load
-import Modules.Validate_Transform as vt
+import dataLogging as log
+import Load as load
+import Validate_Transform as vt
 import logging
 
 def callback(message: pubsub_v1.subscriber.message.Message) -> None:

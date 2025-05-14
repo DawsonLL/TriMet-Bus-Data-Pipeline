@@ -1,9 +1,8 @@
 import requests
 import datetime
 import logging
-import dataLogging as log
-import Publish as pub
-
+import Modules.dataLogging as log
+import Modules.Publish as Publish
 #configures the error logging
 logging.basicConfig(filename='error.log', level=logging.ERROR, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -27,33 +26,22 @@ subCount = 0
 logData = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": 0.0, "#_pub_message_published": pubCount, "#_sub_message_received" : subCount}
 log.preLoad(logData)
 
-'''
-#Progress Tracker
-totalIds = len(vehicleIds)
-countIds = 0
-'''
 
+
+trimet_publisher = Publish.Pub("data-eng-456119", "Trimet_IHS")        
 
 for id in vehicleIds:
     url = baseUrl + id
     data = requests.get(url)
     if data.status_code == 200:
-        '''
-        countIds += 1
-        print(f"Progress: {countIds}/{totalIds}", end='\r')
-        '''
         try:
             data = data.json()
             sensorReadings += len(data)
-            pubCount += pub.Publish_PubSub(data)
+            pubCount += trimet_publisher.Publish_PubSub(data)
         except Exception as e:
             errorCount += 1 #Adds to Error Count
             #logging.error(f"An error occurred: {e}")
-    '''
-    else:
-        totalIds -= 1
-        print(f"Progress: {countIds}/{totalIds}", end='\r')
-    '''
+
 
 #Logs Data After Collection
 try:

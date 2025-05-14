@@ -2,7 +2,7 @@ import time
 import psycopg2
 import datetime
 import io
-import Modules.dataLogging as log
+import dataLogging as log
 
 DBname = "pipeline_db"
 DBuser = "postgres"
