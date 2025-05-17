@@ -3,18 +3,12 @@ import datetime
 import json
 import pandas as pd
 import time
+import logging
 import Modules.Load as load
 import Modules.dataLogging as log
 import Modules.Subscribe as Subscribe
 import Modules.Validate_Transform as vt
-import logging
 
-def safe_json_load(s):
-    try:
-        return json.loads(s)
-    except Exception as e:
-        logging.error(f"An error occurred: {e}")
-        return None
 
 
 #configures the error logging
@@ -22,10 +16,12 @@ logging.basicConfig(filename=f'.\Logs\{datetime.date.today()}_error.log', level=
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 project_id = "data-eng-456119"
-subscription_id = "my-sub"
-timeout = 2000  # seconds
+subscription_id = "Trimet_IHS-sub"
+timeout = 500  # seconds
 
 trimetSubscriber = Subscribe.Sub(project_id, subscription_id , timeout)
+dBConn = load.dBConnect("pipeline_db", "postgres", "coJBU@6uv4U4Hq", "localhost")
+trimetDB = load.TripDataLoader(dBConn)
 
 # we need a while true so that the script runs indefinitely within systemd
 while True:
@@ -38,20 +34,21 @@ while True:
         time.sleep(10)
 
         trimetSubscriber.consumer()
+            #grab the data from the subscriber and pulls the datastring out of the json
 
-        #grab the data from the subscriber and pulls the datastring out of the json
         transformedMessages = pd.DataFrame(trimetSubscriber.messages)
-        transformedMessages = transformedMessages['data'].apply(safe_json_load).dropna()
-        transformedMessages = pd.json_normalize(transformedMessages['data'].apply(json.loads))
-        transformedMessages = vt.Transform(transformedMessages)
+        if not transformedMessages.empty:
+            transformedMessages = transformedMessages.dropna()
+            transformedMessages = pd.json_normalize(transformedMessages['data'].apply(json.loads))
+            transformedMessages = vt.Transform(transformedMessages)
 
-        conn = load.dbconnect()
-        load.createTables(conn)
-        load_count = load.load_data(conn, transformedMessages, f"{datetime.date.today()}")
 
-        #add datalog here
-        log.consumerLog(trimetSubscriber.count)
-        log.dataSaved(trimetSubscriber.messages.memory_usage(index=True).sum()/1024)
+            trimetDB.create_tables()
+            load_count = trimetDB.load_data(transformedMessages, f"{datetime.date.today()}")
+
+            #add datalog here
+            log.consumerLog(trimetSubscriber.count)
+            log.dataSaved(transformedMessages.memory_usage(index=True).sum()/1024)
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")     

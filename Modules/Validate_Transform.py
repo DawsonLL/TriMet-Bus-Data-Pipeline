@@ -180,7 +180,7 @@ def assert_one_breadcrumb(df):
     except AssertionError as e:
         print(f"Found {unique_rows} trips with 1 breadcrumb!")
         # Filter out trips with only 1 breadcrumb
-        df = df[df['EVENT_NO_TRIP'].map(df['EVENT_NO_TRIP'].value_counts()) > 1]
+        df = df[df['EVENT_NO_TRIP'].map(df['EVENT_NO_TRIP'].value_counts()) > 1].copy()
         return df
     return df
 

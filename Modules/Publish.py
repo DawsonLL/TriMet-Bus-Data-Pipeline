@@ -5,8 +5,24 @@ from concurrent import futures
 import logging
 
 class Pub:
+    """
+    A class for publishing messages to a Google Cloud Pub/Sub topic.
+
+    Attributes:
+        project_id (str): Google Cloud project ID.
+        topic_id (str): Pub/Sub topic ID.
+        pubCount (int): Counter for successfully published messages.
+        publisher (PublisherClient): Pub/Sub publisher client.
+    """
 
     def __init__(self, pid, tid):
+        """
+        Initializes the Pub class with project and topic IDs.
+
+        Args:
+            pid (str): Google Cloud project ID.
+            tid (str): Pub/Sub topic ID.
+        """
         self.project_id = pid
         self.topic_id = tid
         self.pubCount = 0
@@ -23,6 +39,12 @@ class Pub:
 
     #publishes to the Trimet_IHS topic
     def Publish_PubSub(self, data):
+        """
+        Publishes a list of data items to a Pub/Sub topic.
+
+        Args:
+            data (list): A list of dictionaries to be published as messages.
+        """
         start_time = datetime.datetime.now()
 
         future_list = []

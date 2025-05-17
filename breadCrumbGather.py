@@ -24,7 +24,7 @@ logData = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_senso
 log.preLoad(logData)
 
 
-trimetPublisher = Publish.Pub("data-eng-456119", "my-topic")        
+trimetPublisher = Publish.Pub("data-eng-456119", "Trimet_IHS")        
 
 for id in vehicleIds:
     url = baseUrl + id
