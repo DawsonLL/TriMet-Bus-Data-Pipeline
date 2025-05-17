@@ -34,7 +34,7 @@ while True:
 
     project_id = "data-eng-456119"
     subscription_id = "Trimet_IHS-sub"
-    timeout = 3000  # seconds
+    timeout = 2000  # seconds
     count = 0
     path = "./Received_Data/"
     messages = []
@@ -54,6 +54,12 @@ while True:
             logging.error(f"An error occurred: {e}")
         finally:
             #transform the data
+            end_time = datetime.datetime.now()
+            run_time = end_time - start_time
+            print(f"{count} messages received in {run_time}")
+            streaming_pull_future.cancel()
+            streaming_pull_future.result()
+
             messages = pd.DataFrame(messages)
             #pulls the datastring out of the json
             messages = pd.json_normalize(messages['data'].apply(json.loads))
@@ -62,13 +68,7 @@ while True:
             #load the data into the database
             conn = load.dbconnect()
             load.createTables(conn)
-            load_count = load.load_data(conn, messages)
-
-            end_time = datetime.datetime.now()
-            run_time = end_time - start_time
-            print(f"{count} messages received in {run_time}")
-            streaming_pull_future.cancel()
-            streaming_pull_future.result()
+            load_count = load.load_data(conn, messages, f"{datetime.date.today()}")
 
             #add datalog here
             log.consumerLog(count)
