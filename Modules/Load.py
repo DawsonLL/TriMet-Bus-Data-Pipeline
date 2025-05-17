@@ -4,9 +4,9 @@ import datetime
 import io
 import Modules.dataLogging as log
 
-DBname = "pipeline_db"
+DBname = "postgres"
 DBuser = "postgres"
-DBpwd = "coJBU@6uv4U4Hq"
+DBpwd = "1234"
 
 
 def dbconnect():

@@ -33,7 +33,6 @@ def process_messages_in_chunks(messages, chunk_size=1000):
 # Validation for individual validation
 def Indvidual_Validation(message_df):
 
-    # Existence validation for each column
     columns = ["EVENT_NO_TRIP", 
                "EVENT_NO_STOP", 
                "OPD_DATE", 
@@ -44,7 +43,8 @@ def Indvidual_Validation(message_df):
                "GPS_LATITUDE", 
                "GPS_SATELLITES", 
                "GPS_HDOP"]
-
+    
+    # Existence validation for each column
     message_df = assert_nulls(message_df, columns)
     # GPS_LATITUDE should be between 42N (42) to 4615'N (46.25) (the rough borders of Oregon)
     message_df = assert_lat_range(message_df)
@@ -70,7 +70,7 @@ def Transform(messages):
     messages = assert_unique_vehicle_per_trip(messages)
 
     # Perform individual validation in place
-    Indvidual_Validation(messages)
+    messages = Indvidual_Validation(messages)
 
     # Drop the unused columns in place
     messages.drop(columns=["GPS_SATELLITES", "GPS_HDOP", "EVENT_NO_STOP"], inplace=True)
@@ -102,9 +102,10 @@ def Transform(messages):
     # Rename the column to match the schema in place
     messages.rename(columns={'EVENT_NO_TRIP': 'trip_id', 'GPS_LONGITUDE': 'longitude', 'GPS_LATITUDE': 'latitude', 'SPEED': 'speed', 'TIMESTAMP': 'tstamp', 'VEHICLE_ID': 'vehicle_id'}, inplace=True)
 
+    #reapply the null validations
+    messages = assert_nulls(messages, ["trip_id", "longitude", "latitude", "speed", "tstamp", "vehicle_id"])
+
     return messages
-
-
 
 #-----------------------------------------------------------------Assertions---------------------------------------------------------------------------
 
