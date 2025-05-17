@@ -70,7 +70,7 @@ def Transform(messages):
     messages = assert_unique_vehicle_per_trip(messages)
 
     # Perform individual validation in place
-    Indvidual_Validation(messages)
+    messages = Indvidual_Validation(messages)
 
     # Drop the unused columns in place
     messages.drop(columns=["GPS_SATELLITES", "GPS_HDOP", "EVENT_NO_STOP"], inplace=True)
