@@ -17,7 +17,7 @@ logging.basicConfig(filename=f'.\Logs\{datetime.date.today()}_error.log', level=
 
 project_id = "data-eng-456119"
 subscription_id = "Trimet_IHS-sub"
-timeout = 500  # seconds
+timeout = 2000  # seconds
 
 trimetSubscriber = Subscribe.Sub(project_id, subscription_id , timeout)
 dBConn = load.dBConnect("pipeline_db", "postgres", "coJBU@6uv4U4Hq", "localhost")
