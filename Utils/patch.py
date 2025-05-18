@@ -1,7 +1,7 @@
 import os
 import pandas as pd
-import Validate_Transform as vt
-import Load as load
+import Modules.Validate_Transform as vt
+import Modules.Load as load
 import logging
 import datetime
 import json
