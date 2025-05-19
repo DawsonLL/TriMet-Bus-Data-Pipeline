@@ -39,5 +39,6 @@ for id in vehicleIds:
         stops_df = pd.DataFrame(all_rows, columns=headers)
         
         stops_df.to_json(f'{path}/{datetime.date.today()}_{id}.json')
+        
 
         
