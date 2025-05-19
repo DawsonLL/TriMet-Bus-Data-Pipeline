@@ -1,6 +1,7 @@
 from google.cloud import pubsub_v1
 import os
 import json
+import logging
 import datetime
 from concurrent import futures
 
@@ -9,7 +10,7 @@ def future_callback(future):
         # Wait for the result of the publish operation.
         future.result()  
     except Exception as e:
-        pass
+        logging.error(f"An error occurred: {e} {x}")
 
 #takes the date and opens the folder corosponding to that date and reads all of the jsons in that folder
 #then publishes them to the Trimet_IHS topic
