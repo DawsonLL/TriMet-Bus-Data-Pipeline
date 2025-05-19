@@ -1,6 +1,7 @@
 from google.cloud import pubsub_v1
 import datetime
 import json
+import os
 import pandas as pd
 import time
 import logging
@@ -15,12 +16,12 @@ import Modules.Validate_Transform as vt
 logging.basicConfig(filename=f'.\Logs\{datetime.date.today()}_error.log', level=logging.ERROR, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-project_id = "data-eng-456119"
-subscription_id = "Trimet_IHS-sub"
+project_id = os.getenv("PROJECTID")
+subscription_id = os.getenv("BREADCRUMBSUB")
 timeout = 2000  # seconds
 
 trimetSubscriber = Subscribe.Sub(project_id, subscription_id , timeout)
-dBConn = load.dBConnect("pipeline_db", "postgres", "coJBU@6uv4U4Hq", "localhost")
+dBConn = load.dBConnect(os.getenv("DBNAME"), os.getenv("DBUSERNAME"), os.getenv("DBPASSWORD"), "localhost")
 trimetDB = load.TripDataLoader(dBConn)
 
 # we need a while true so that the script runs indefinitely within systemd

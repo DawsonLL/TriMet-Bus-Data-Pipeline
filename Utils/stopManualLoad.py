@@ -16,7 +16,7 @@ logging.basicConfig(filename=f'.\Logs\{datetime.date.today()}_error.log', level=
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-stopPublisher = Publish.Pub("data-eng-456119", "Trimet_IHS_Stops")       
+stopPublisher = Publish.Pub(os.getenv("PROJECTID"), os.getenv("STOPTOPIC"))       
 folder_path = "./StopEvents"
 sensorReadings = 0
 if os.path.exists(folder_path):
