@@ -6,7 +6,9 @@ import Modules.dataLogging as log
 import Modules.Publish as Publish
 
 #configures the error logging
-logging.basicConfig(filename=f'.\Logs\{datetime.date.today()}_error.log', level=logging.ERROR, 
+if not os.path.exists('./Logs'):
+    os.makedirs(log_dir, exist_ok=True)
+logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=logging.ERROR, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 #our base Url

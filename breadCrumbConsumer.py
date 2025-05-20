@@ -13,14 +13,14 @@ import Modules.Validate_Transform as vt
 
 
 #configures the error logging
-logging.basicConfig(filename=f'.\Logs\{datetime.date.today()}_error.log', level=logging.ERROR, 
+logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=logging.ERROR, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 project_id = os.getenv("PROJECTID")
 subscription_id = os.getenv("BREADCRUMBSUB")
 timeout = 2000  # seconds
 
-trimetSubscriber = Subscribe.Sub(project_id, subscription_id , timeout)
+trimetSubscriber = Subscribe.Sub(project_id, subscription_id, timeout)
 dBConn = load.dBConnect(os.getenv("DBNAME"), os.getenv("DBUSERNAME"), os.getenv("DBPASSWORD"), os.getenv("HOSTNAME"))
 trimetDB = load.TripDataLoader(dBConn)
 
