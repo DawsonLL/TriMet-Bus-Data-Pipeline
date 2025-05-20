@@ -27,33 +27,18 @@ subCount = 0
 logData = {"date": currDate, "day_of_week": day, "time_accessed": time, "#_sensor_readings": sensorReadings, "total_data_saved_(KBs)": 0.0, "#_pub_message_published": pubCount, "#_sub_message_received" : subCount}
 log.preLoad(logData)
 
-'''
-#Progress Tracker
-totalIds = len(vehicleIds)
-countIds = 0
-'''
-
-
 for id in vehicleIds:
     url = baseUrl + id
     data = requests.get(url)
     if data.status_code == 200:
-        '''
-        countIds += 1
-        print(f"Progress: {countIds}/{totalIds}", end='\r')
-        '''
+
         try:
             data = data.json()
             sensorReadings += len(data)
             pubCount += pub.Publish_PubSub(data)
         except Exception as e:
             errorCount += 1 #Adds to Error Count
-            #logging.error(f"An error occurred: {e}")
-    '''
-    else:
-        totalIds -= 1
-        print(f"Progress: {countIds}/{totalIds}", end='\r')
-    '''
+            logging.error(f"An error occurred: {e}")
 
 #Logs Data After Collection
 try:

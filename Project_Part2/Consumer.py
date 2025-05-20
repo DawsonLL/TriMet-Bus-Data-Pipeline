@@ -32,8 +32,8 @@ while True:
         f.close()
     time.sleep(10)
 
-    project_id = "data-eng-456119"
-    subscription_id = "Trimet_IHS-sub"
+    project_id = os.getenv("PROJECTID")
+    subscription_id = os.getenv("BREADCRUMBSUB")
     timeout = 2000  # seconds
     count = 0
     path = "./Received_Data/"

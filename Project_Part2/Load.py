@@ -2,16 +2,18 @@ import time
 import psycopg2
 import datetime
 import io
+import os
 import dataLogging as log
 
-DBname = "pipeline_db"
-DBuser = "postgres"
-DBpwd = "coJBU@6uv4U4Hq"
+DBname = os.getenv("DBNAME")
+DBuser = os.getenv("DBUSERNAME")
+DBpwd = os.getenv("DBPASSWORD")
+hostname = os.getenv("HOSTNAME")
 
 
 def dbconnect():
     conn = psycopg2.connect(
-        host="localhost",
+        host=hostname,
         database=DBname,
         user=DBuser,
         password=DBpwd,

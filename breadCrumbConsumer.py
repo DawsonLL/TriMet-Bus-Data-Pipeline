@@ -21,7 +21,7 @@ subscription_id = os.getenv("BREADCRUMBSUB")
 timeout = 2000  # seconds
 
 trimetSubscriber = Subscribe.Sub(project_id, subscription_id , timeout)
-dBConn = load.dBConnect(os.getenv("DBNAME"), os.getenv("DBUSERNAME"), os.getenv("DBPASSWORD"), "localhost")
+dBConn = load.dBConnect(os.getenv("DBNAME"), os.getenv("DBUSERNAME"), os.getenv("DBPASSWORD"), os.getenv("HOSTNAME"))
 trimetDB = load.TripDataLoader(dBConn)
 
 # we need a while true so that the script runs indefinitely within systemd
