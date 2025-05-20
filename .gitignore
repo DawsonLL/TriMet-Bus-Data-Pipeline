@@ -14,4 +14,5 @@ toLoad.csv
 Patched_Data
 dbLog.csv
 StopEvents
-/Logs
+Logs
+*.log
