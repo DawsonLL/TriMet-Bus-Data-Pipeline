@@ -20,7 +20,6 @@ for folder_path in ['./Received_Data', '/Received_Data']:
                 file_path = os.path.join(folder_path, filename)
 
                 messages = pd.read_json(file_path)
-                #messages= messages["data"]
 
                 # Optionally, expand the parsed data into separate columns
                 messages = pd.json_normalize(messages['data'].apply(json.loads))
