@@ -38,7 +38,7 @@ for id in vehicleIds:
         except Exception as e:
             logging.error(f"An error occurred: {e}")
 
-
+#TO BE ADDED
 """
 #Logs Data After Collection
 try:
