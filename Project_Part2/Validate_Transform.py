@@ -54,9 +54,9 @@ def Indvidual_Validation(message_df):
     message_df = assert_acttime_48(message_df)
     #Each Trip_ID should have more than one breadcrumb associated with it
     message_df = assert_one_breadcrumb(message_df)
-    #No non negative Trip Ids
+    #No negative Trip Ids
     message_df = assert_non_negative_tripid(message_df)
-    #No non negative GPS_HDOP
+    #No negative GPS_HDOP
     message_df = assert_non_negative_hdop(message_df)
     #HDOP should be less than 10
     message_df = assert_high_hdop(message_df)
