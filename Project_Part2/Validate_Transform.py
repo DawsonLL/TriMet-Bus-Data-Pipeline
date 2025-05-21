@@ -54,6 +54,13 @@ def Indvidual_Validation(message_df):
     message_df = assert_acttime_48(message_df)
     #Each Trip_ID should have more than one breadcrumb associated with it
     message_df = assert_one_breadcrumb(message_df)
+    #No non negative Trip Ids
+    message_df = assert_non_negative_tripid(message_df)
+    #No non negative GPS_HDOP
+    message_df = assert_non_negative_hdop(message_df)
+    #HDOP should be less than 10
+    message_df = assert_high_hdop(message_df)
+
 
     return message_df
 
@@ -70,7 +77,7 @@ def Transform(messages):
     messages = assert_unique_vehicle_per_trip(messages)
 
     # Perform individual validation in place
-    Indvidual_Validation(messages)
+    messages = Indvidual_Validation(messages)
 
     # Drop the unused columns in place
     messages.drop(columns=["GPS_SATELLITES", "GPS_HDOP", "EVENT_NO_STOP"], inplace=True)
@@ -182,5 +189,35 @@ def assert_unique_vehicle_per_trip(df):
     except AssertionError as e:
         print("Some EVENT_NO_TRIP values are associated with multiple VEHICLE_IDs")
         df["VEHICLE_ID"] = df.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].transform(lambda x: x.mode()[0])
+        return df
+    return df
+
+def assert_non_negative_tripid(df):
+    try:
+        assert (df['EVENT_NO_TRIP'] > 0).all()
+    except AssertionError as e:
+        print('Non-positive EVENT_NO_STOP found')
+        rows_to_drop = df[(df[['EVENT_NO_STOP']] < 0).any(axis=1)].index
+        df = df.drop(rows_to_drop)
+        return df
+    return df
+
+def assert_non_negative_hdop(df):
+    try:
+        assert(df['GPS_HDOP'] > 0).all()
+    except AssertionError as e:
+        print('Non-positive GPS_HDOP found')
+        rows_to_drop = df[(df[['GPS_HDOP']] < 0).any(axis=1)].index
+        df = df.drop(rows_to_drop)
+        return df
+    return df
+
+def assert_high_hdop(df):
+    try:
+        assert (df['GPS_HDOP'] < 10).all()
+    except AssertionError as e:
+        print('High HDOP values found')
+        rows_to_drop = df[(df[['GPS_HDOP']] > 10).any(axis=1)].index
+        df = df.drop(rows_to_drop)
         return df
     return df
