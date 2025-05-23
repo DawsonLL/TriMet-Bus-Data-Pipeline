@@ -115,7 +115,7 @@ class TripDataLoader:
                     latitude float,
                     longitude float,
                     speed float,
-                    trip_id integer REFERENCES Trip
+                    trip_id integer
                 );
             """)
             print("Created Trip and BreadCrumb tables.")
