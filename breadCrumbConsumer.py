@@ -11,14 +11,14 @@ import Modules.Subscribe as Subscribe
 import Modules.Validate_Transform as vt
 
 
-
+'''
 #configures the error logging
 logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=logging.ERROR, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
-
+'''
 project_id = os.getenv("PROJECTID")
 subscription_id = os.getenv("BREADCRUMBSUB")
-timeout = 2000  # seconds
+timeout = 10  # seconds
 
 trimetSubscriber = Subscribe.Sub(project_id, subscription_id, timeout)
 dBConn = load.dBConnect(os.getenv("DBNAME"), os.getenv("DBUSERNAME"), os.getenv("DBPASSWORD"), os.getenv("HOSTNAME"))
@@ -53,4 +53,3 @@ while True:
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")     
-

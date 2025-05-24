@@ -111,16 +111,19 @@ def Transform(messages):
         messages.rename(columns={'EVENT_NO_TRIP': 'trip_id', 'GPS_LONGITUDE': 'longitude', 'GPS_LATITUDE': 'latitude', 'SPEED': 'speed', 'TIMESTAMP': 'tstamp', 'VEHICLE_ID': 'vehicle_id'}, inplace=True)
 
         #reapply the null validations
-        messages = assert_nulls(messages, ["trip_id", "longitude", "latitude", "speed", "tstamp", "vehicle_id"])
+        messages = assert_nulls(messages)
 
         return messages
-    elif messages.colunms.tolist() == columns_trips:
+    elif messages.columns.tolist() == columns_trips:
 
         messages.drop_duplicates(inplace=True)
 
         messages = messages[['vehicle_number', 'route_number', 'trip_number', 'service_key', 'direction']]
 
         messages = assert_nulls(messages)
+        messages.rename(columns={'trip_number': 'trip_id', 'route_number': 'route_id', 'vehicle_number': 'vehicle_id'}, inplace=True)
+        messages['direction'] = messages['direction'].replace({1 : 'Out', 0 : 'Back'})
+        messages['service_key'] = messages['service_key'].replace({'W' : 'Weekday', 'S' : 'Saturday', 'U': 'Sunday'})
         
         return messages
 #-----------------------------------------------------------------Assertions---------------------------------------------------------------------------
