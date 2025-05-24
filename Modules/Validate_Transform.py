@@ -33,19 +33,8 @@ def process_messages_in_chunks(messages, chunk_size=1000):
 # Validation for individual validation
 def Indvidual_Validation(message_df):
 
-    columns = ["EVENT_NO_TRIP", 
-               "EVENT_NO_STOP", 
-               "OPD_DATE", 
-               "VEHICLE_ID", 
-               "METERS", 
-               "ACT_TIME", 
-               "GPS_LONGITUDE", 
-               "GPS_LATITUDE", 
-               "GPS_SATELLITES", 
-               "GPS_HDOP"]
-    
     # Existence validation for each column
-    message_df = assert_nulls(message_df, columns)
+    message_df = assert_nulls(message_df)
     # GPS_LATITUDE should be between 42N (42) to 4615'N (46.25) (the rough borders of Oregon)
     message_df = assert_lat_range(message_df)
     # GPS_LONGITUDE should be between 116 45'W (-116.75) to 124 30'W (-124.5) (the rough borders of Oregon)
@@ -59,59 +48,87 @@ def Indvidual_Validation(message_df):
 
 def Transform(messages):
 
-    # We need to pull out the nested data string from the JSON
-    #messages = process_messages_in_chunks(messages)
-
-    # Remove exact duplicates in place
-    messages.drop_duplicates(inplace=True)
-
-    # Each EVENT_NO_TRIP is assigned to only one VEHICLE_ID
-    # messages["VEHICLE_ID"] = messages.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].transform(lambda x: x.mode()[0])
-    messages = assert_unique_vehicle_per_trip(messages)
-
-    # Perform individual validation in place
-    messages = Indvidual_Validation(messages)
-
-    # Drop the unused columns in place
-    messages.drop(columns=["GPS_SATELLITES", "GPS_HDOP", "EVENT_NO_STOP"], inplace=True)
-
-    # Create the timestamp in place
-    messages['TIMESTAMP'] = messages.apply(lambda row: pd.to_datetime(row['OPD_DATE'], format="%d%b%Y:%H:%M:%S") + pd.to_timedelta(row['ACT_TIME'], unit='s'), axis=1)
-    messages.drop(columns=["OPD_DATE", "ACT_TIME"], inplace=True)
-
-    # Sort values in place
-    messages.sort_values(by=['EVENT_NO_TRIP', 'TIMESTAMP'], inplace=True)
-
-    # Calculate the speed in place
-    messages['dMETERS'] = messages.groupby("EVENT_NO_TRIP")['METERS'].diff()
-    messages['dTIMESTAMP'] = messages.groupby("EVENT_NO_TRIP")['TIMESTAMP'].diff().dt.total_seconds()
-    messages['SPEED'] = messages['dMETERS'] / messages['dTIMESTAMP']
-    messages.drop(columns=['dMETERS', 'dTIMESTAMP', 'METERS'], inplace=True)
-
-    # Set the first row speed equal to the second in place
-    messages['SPEED'] = messages.groupby('EVENT_NO_TRIP')['SPEED'].transform(lambda x: x.bfill())
+    columns_bc = ["EVENT_NO_TRIP", 
+            "EVENT_NO_STOP", 
+            "OPD_DATE", 
+            "VEHICLE_ID", 
+            "METERS", 
+            "ACT_TIME", 
+            "GPS_LONGITUDE", 
+            "GPS_LATITUDE", 
+            "GPS_SATELLITES", 
+            "GPS_HDOP"]
     
-    # Create the columns we don't have values for in place
-    messages['route_id'] = 0
-    messages['service_key'] = ''
-    messages['direction'] = ''
+    columns_trips = ['vehicle_number', 'leave_time', 'train', 'route_number', 'direction',
+       'service_key', 'trip_number', 'stop_time', 'arrive_time', 'dwell',
+       'location_id', 'door', 'lift', 'ons', 'offs', 'estimated_load',
+       'maximum_speed', 'train_mileage', 'pattern_distance',
+       'location_distance', 'x_coordinate', 'y_coordinate', 'data_source',
+       'schedule_status']
 
-    # Speed should not exceed 120 MPH (53.6448 Meters per Second) in place
-    messages = assert_speed_cap(messages)
+    if messages.columns.tolist() == columns_bc:
+        # We need to pull out the nested data string from the JSON
+        #messages = process_messages_in_chunks(messages)
 
-    # Rename the column to match the schema in place
-    messages.rename(columns={'EVENT_NO_TRIP': 'trip_id', 'GPS_LONGITUDE': 'longitude', 'GPS_LATITUDE': 'latitude', 'SPEED': 'speed', 'TIMESTAMP': 'tstamp', 'VEHICLE_ID': 'vehicle_id'}, inplace=True)
+        # Remove exact duplicates in place
+        messages.drop_duplicates(inplace=True)
 
-    #reapply the null validations
-    messages = assert_nulls(messages, ["trip_id", "longitude", "latitude", "speed", "tstamp", "vehicle_id"])
+        # Each EVENT_NO_TRIP is assigned to only one VEHICLE_ID
+        # messages["VEHICLE_ID"] = messages.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].transform(lambda x: x.mode()[0])
+        messages = assert_unique_vehicle_per_trip(messages)
 
-    return messages
+        # Perform individual validation in place
+        messages = Indvidual_Validation(messages)
 
+        # Drop the unused columns in place
+        messages.drop(columns=["GPS_SATELLITES", "GPS_HDOP", "EVENT_NO_STOP"], inplace=True)
+
+        # Create the timestamp in place
+        messages['TIMESTAMP'] = messages.apply(lambda row: pd.to_datetime(row['OPD_DATE'], format="%d%b%Y:%H:%M:%S") + pd.to_timedelta(row['ACT_TIME'], unit='s'), axis=1)
+        messages.drop(columns=["OPD_DATE", "ACT_TIME"], inplace=True)
+
+        # Sort values in place
+        messages.sort_values(by=['EVENT_NO_TRIP', 'TIMESTAMP'], inplace=True)
+
+        # Calculate the speed in place
+        messages['dMETERS'] = messages.groupby("EVENT_NO_TRIP")['METERS'].diff()
+        messages['dTIMESTAMP'] = messages.groupby("EVENT_NO_TRIP")['TIMESTAMP'].diff().dt.total_seconds()
+        messages['SPEED'] = messages['dMETERS'] / messages['dTIMESTAMP']
+        messages.drop(columns=['dMETERS', 'dTIMESTAMP', 'METERS'], inplace=True)
+
+        # Set the first row speed equal to the second in place
+        messages['SPEED'] = messages.groupby('EVENT_NO_TRIP')['SPEED'].transform(lambda x: x.bfill())
+        
+        # Create the columns we don't have values for in place
+        messages['route_id'] = 0
+        messages['service_key'] = ''
+        messages['direction'] = ''
+
+        # Speed should not exceed 120 MPH (53.6448 Meters per Second) in place
+        messages = assert_speed_cap(messages)
+
+        # Rename the column to match the schema in place
+        messages.rename(columns={'EVENT_NO_TRIP': 'trip_id', 'GPS_LONGITUDE': 'longitude', 'GPS_LATITUDE': 'latitude', 'SPEED': 'speed', 'TIMESTAMP': 'tstamp', 'VEHICLE_ID': 'vehicle_id'}, inplace=True)
+
+        #reapply the null validations
+        messages = assert_nulls(messages, ["trip_id", "longitude", "latitude", "speed", "tstamp", "vehicle_id"])
+
+        return messages
+    elif messages.colunms.tolist() == columns_trips:
+
+        messages.drop_duplicates(inplace=True)
+
+        messages = messages[['vehicle_number', 'route_number', 'trip_number', 'service_key', 'direction']]
+
+        messages = assert_nulls(messages)
+        
+        return messages
 #-----------------------------------------------------------------Assertions---------------------------------------------------------------------------
 
 # Check for null values in specified columns and drop rows with nulls if found
-def assert_nulls(df, columns):
-    for column in columns:
+def assert_nulls(df):
+
+    for column in df.columns.tolist():
         # Count non-null values and total values in the column
         idNullCount = df[column].notnull().sum()
         totalIdCount = len(df)

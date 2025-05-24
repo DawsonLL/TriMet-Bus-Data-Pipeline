@@ -45,7 +45,7 @@ while True:
 
 
             trimetDB.create_tables()
-            load_count = trimetDB.load_data(transformedMessages, f"{datetime.date.today()}")
+            load_count = trimetDB.load_data_bc(transformedMessages, f"{datetime.date.today()}")
 
             #add datalog here
             log.consumerLog(trimetSubscriber.count)
