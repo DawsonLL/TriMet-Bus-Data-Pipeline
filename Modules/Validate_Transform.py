@@ -114,6 +114,8 @@ def Transform(messages):
         messages = assert_nulls(messages)
 
         return messages
+    
+
     elif messages.columns.tolist() == columns_trips:
 
         messages.drop_duplicates(inplace=True)
@@ -122,7 +124,7 @@ def Transform(messages):
 
         messages = assert_nulls(messages)
         messages.rename(columns={'trip_number': 'trip_id', 'route_number': 'route_id', 'vehicle_number': 'vehicle_id'}, inplace=True)
-        messages['direction'] = messages['direction'].replace({1 : 'Out', 0 : 'Back'})
+        messages['direction'] = messages['direction'].replace({'1' : 'Out', '0' : 'Back'})
         messages['service_key'] = messages['service_key'].replace({'W' : 'Weekday', 'S' : 'Saturday', 'U': 'Sunday'})
         
         return messages

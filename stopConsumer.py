@@ -11,11 +11,11 @@ import Modules.Subscribe as Subscribe
 import Modules.Validate_Transform as vt
 
 
-'''
+
 #configures the error logging
 logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=logging.ERROR, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
-'''
+
 project_id = os.getenv("PROJECTID")
 subscription_id = os.getenv("STOPSUB")
 timeout = 10  # seconds
@@ -41,6 +41,7 @@ while True:
             transformedMessages = transformedMessages.dropna()
             transformedMessages = pd.json_normalize(transformedMessages['data'].apply(json.loads))
             transformedMessages = vt.Transform(transformedMessages)
+
 
 
             trimetDB.create_tables()

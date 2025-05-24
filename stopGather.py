@@ -8,11 +8,11 @@ from bs4 import BeautifulSoup
 import pandas as pd
 
 
-'''
+
 #configures the error logging
 logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=logging.ERROR, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
-'''
+
 #our base Url
 baseUrl = "https://busdata.cs.pdx.edu/api/getStopEvents?vehicle_num="
 #reads vehicleids.txt and parses into a list for each id entry
@@ -34,12 +34,9 @@ stopPublisher = Publish.Pub(os.getenv("PROJECTID"), os.getenv("STOPTOPIC"))
 for id in vehicleIds:
     
     resp = requests.get(f'{baseUrl}{id}')
-    if resp.status_code == 404:
-        print(f'404 ERROR for {id}')
-    else:
-        soup = BeautifulSoup(resp.text, 'html.parser')
 
-        tops_df = pd.DataFrame
+    if resp.status_code == 200:
+        soup = BeautifulSoup(resp.text, 'html.parser')
         tables = soup.find_all("table")
         headers = None
 
@@ -56,7 +53,7 @@ for id in vehicleIds:
         stops_df = pd.DataFrame(all_rows, columns=headers)
         
         try:
-            data = stops_df.to_json()
+            data = stops_df.to_dict(orient='records')
             sensorReadings += len(data)
             stopPublisher.Publish_PubSub(data)
         except Exception as e:

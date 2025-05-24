@@ -19,6 +19,6 @@ trimetDB = load.TripDataLoader(dBConn)
 
 
 df = pd.read_json('StopEvents/2025-05-18/2025-05-18_3002.json')
+df['direction'] = df['direction'].astype(str)
 df =vt.Transform(df)
-print(df)
 loadcount = trimetDB.load_data_trips(df, f"{datetime.date.today()}")
