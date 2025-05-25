@@ -103,7 +103,7 @@ class TripDataLoader:
                 CREATE TYPE tripdir_type AS ENUM ('Out', 'Back', '0');
 
                 CREATE TABLE Trip (
-                    trip_id integer PRIMARY KEY,
+                    trip_id integer,
                     route_id integer,
                     vehicle_id integer,
                     service_key service_type,
@@ -198,7 +198,7 @@ class TripDataLoader:
                 trip_count += 1
 
             except Exception as e:
-                logging.error(f"Skipping row due to error: {row} {e}")
+                logging.error(f"Trips copy error: {row} {e}")
                 skipped_count += 1
 
         trip_buf.seek(0)
@@ -208,7 +208,7 @@ class TripDataLoader:
                 cursor.copy_from(trip_buf, 'trip', sep=',', null='', columns=('trip_id', 'route_id', 'vehicle_id', 'service_key', 'direction'))
                 print(f"Copied rows into Trip")
             except Exception as e:
-                print(f"Trip copy error: {e}")
+                logging.error(f"An error occurred: {e}")     
 
 
         self.db.commit()
