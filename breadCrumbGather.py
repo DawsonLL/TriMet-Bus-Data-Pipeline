@@ -6,8 +6,6 @@ import Modules.dataLogging as log
 import Modules.Publish as Publish
 
 #configures the error logging
-if not os.path.exists('./Logs'):
-    os.makedirs(log_dir, exist_ok=True)
 logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=logging.ERROR, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -35,6 +33,7 @@ for id in vehicleIds:
     if data.status_code == 200:
         try:
             data = data.json()
+            print(data)
             sensorReadings += len(data)
             trimetPublisher.Publish_PubSub(data)
         except Exception as e:

@@ -17,9 +17,8 @@ logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 project_id = os.getenv("PROJECTID")
-subscription_id = os.getenv("BREADCRUMBSUB")
-timeout = 10  # seconds
-
+subscription_id = os.getenv("STOPSUB")
+timeout = 1000  # seconds
 trimetSubscriber = Subscribe.Sub(project_id, subscription_id, timeout)
 dBConn = load.dBConnect(os.getenv("DBNAME"), os.getenv("DBUSERNAME"), os.getenv("DBPASSWORD"), os.getenv("HOSTNAME"))
 trimetDB = load.TripDataLoader(dBConn)
@@ -44,8 +43,9 @@ while True:
             transformedMessages = vt.Transform(transformedMessages)
 
 
+
             trimetDB.create_tables()
-            load_count = trimetDB.load_data_bc(transformedMessages, f"{datetime.date.today()}")
+            load_count = trimetDB.load_data_trips(transformedMessages, f"{datetime.date.today()}")
 
             #add datalog here
             log.consumerLog(trimetSubscriber.count)

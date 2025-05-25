@@ -4,6 +4,10 @@ import datetime
 import logging
 import Modules.dataLogging as log
 import Modules.Publish as Publish
+from bs4 import BeautifulSoup
+import pandas as pd
+
+
 
 #configures the error logging
 logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=logging.ERROR, 
@@ -28,15 +32,33 @@ subCount = 0
 stopPublisher = Publish.Pub(os.getenv("PROJECTID"), os.getenv("STOPTOPIC"))        
 
 for id in vehicleIds:
-    url = baseUrl + id
-    data = requests.get(url)
-    if data.status_code == 200:
+    
+    resp = requests.get(f'{baseUrl}{id}')
+
+    if resp.status_code == 200:
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        tables = soup.find_all("table")
+        headers = None
+
+        all_rows = []
+        for table in tables:
+            rows = table.find_all("tr")
+            if not headers:
+                headers = [th.get_text(strip=True) for th in rows[0].find_all("th")]
+
+            for row in rows[1:]:
+                cells = [td.get_text(strip=True) for td in row.find_all("td")]
+                if cells:
+                    all_rows.append(cells)
+        stops_df = pd.DataFrame(all_rows, columns=headers)
+        
         try:
-            data = data.json()
+            data = stops_df.to_dict(orient='records')
             sensorReadings += len(data)
             stopPublisher.Publish_PubSub(data)
         except Exception as e:
             logging.error(f"An error occurred: {e}")
+
 
 #TO BE ADDED
 """

@@ -103,7 +103,7 @@ class TripDataLoader:
                 CREATE TYPE tripdir_type AS ENUM ('Out', 'Back', '0');
 
                 CREATE TABLE Trip (
-                    trip_id integer PRIMARY KEY,
+                    trip_id integer,
                     route_id integer,
                     vehicle_id integer,
                     service_key service_type,
@@ -120,7 +120,7 @@ class TripDataLoader:
             """)
             print("Created Trip and BreadCrumb tables.")
 
-    def load_data(self, data, filename):
+    def load_data_bc(self, data, filename):
         """
         Loads trip and breadcrumb data into the PostgreSQL database using efficient bulk insert.
 
@@ -133,8 +133,6 @@ class TripDataLoader:
         """
         start_date = datetime.date.today()
         day = start_date.strftime("%A")
-        trip_seen = set()
-        trip_buf = io.StringIO()
         bc_buf = io.StringIO()
         trip_count = 0
         bc_count = 0
@@ -142,31 +140,17 @@ class TripDataLoader:
 
         for index, row in data.iterrows():
             try:
-                trip_id = int(row['trip_id'])
-
-                if trip_id not in trip_seen:
-                    trip_seen.add(trip_id)
-                    trip_buf.write(f"{trip_id},{int(row['route_id'])},{int(row['vehicle_id'])},{row['service_key']},{row['direction']}\n")
-                    trip_count += 1
-
                 tstamp = row['tstamp']
-                bc_buf.write(f"{tstamp},{float(row['latitude'])},{float(row['longitude'])},{float(row['speed'])},{trip_id}\n")
+                bc_buf.write(f"{tstamp},{float(row['latitude'])},{float(row['longitude'])},{float(row['speed'])},{int(row['trip_id'])}\n")
                 bc_count += 1
 
             except Exception as e:
                 logging.error(f"Skipping row due to error: {row} {e}")
                 skipped_count += 1
 
-        trip_buf.seek(0)
         bc_buf.seek(0)
 
         with self.db.get_cursor() as cursor:
-            try:
-                cursor.copy_from(trip_buf, 'trip', sep=',', null='', columns=('trip_id', 'route_id', 'vehicle_id', 'service_key', 'direction'))
-                print(f"Copied rows into Trip")
-            except Exception as e:
-                print(f"Trip copy error: {e}")
-
             try:
                 cursor.copy_from(bc_buf, 'breadcrumb', sep=',', null='', columns=('tstamp', 'latitude', 'longitude', 'speed', 'trip_id'))
                 print(f"Copied rows into BreadCrumb")
@@ -187,4 +171,59 @@ class TripDataLoader:
         }
 
         log.updateDBLog(dbData)
-        return trip_count + bc_count
+        return bc_count
+    
+    #create new function called load_data_trips()
+    def load_data_trips(self, data, filename):
+        """
+        Loads trip and breadcrumb data into the PostgreSQL database using efficient bulk insert.
+
+        Args:
+            data (DataFrame): Transformed pandas DataFrame containing sensor data.
+            filename (str): Name of the original file (for logging purposes).
+
+        Returns:
+            int: Total number of rows inserted into the database.
+        """
+        start_date = datetime.date.today()
+        day = start_date.strftime("%A")
+        trip_buf = io.StringIO()
+        trip_count = 0
+        bc_count = 0
+        skipped_count = 0
+
+        for index, row in data.iterrows():
+            try:
+                trip_buf.write(f"{int(row['trip_id'])},{int(row['route_id'])},{int(row['vehicle_id'])},{row['service_key']},{row['direction']}\n")
+                trip_count += 1
+
+            except Exception as e:
+                logging.error(f"Trips copy error: {row} {e}")
+                skipped_count += 1
+
+        trip_buf.seek(0)
+
+        with self.db.get_cursor() as cursor:
+            try:
+                cursor.copy_from(trip_buf, 'trip', sep=',', null='', columns=('trip_id', 'route_id', 'vehicle_id', 'service_key', 'direction'))
+                print(f"Copied rows into Trip")
+            except Exception as e:
+                logging.error(f"An error occurred: {e}")     
+
+
+        self.db.commit()
+
+        dbData = {
+            "file_name": filename,
+            "date": start_date,
+            "day_of_week": day,
+            "#_sensor_readings": len(data),
+            "#_rows_added_trip": trip_count,
+            "#_rows_added_bread": bc_count,
+            "total_rows_added": trip_count + bc_count,
+            "#_rows_skipped": skipped_count
+        }
+
+        log.updateDBLog(dbData)
+        return trip_count
+    
