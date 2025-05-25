@@ -33,7 +33,6 @@ for id in vehicleIds:
     if data.status_code == 200:
         try:
             data = data.json()
-            print(data)
             sensorReadings += len(data)
             trimetPublisher.Publish_PubSub(data)
         except Exception as e:
