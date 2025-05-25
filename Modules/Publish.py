@@ -56,7 +56,6 @@ class Pub:
         for item in data:
             # Data must be a bytestring
             datastr = json.dumps(item).encode("utf-8")
-
             future = self.publisher.publish(topic_path, datastr)
             future.add_done_callback(self.future_callback)
             #add it to the list of futures

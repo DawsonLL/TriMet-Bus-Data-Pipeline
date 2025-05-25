@@ -14,7 +14,7 @@ import Modules.Validate_Transform as vt
 
 #configures the error logging
 logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=logging.ERROR, 
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+                    format='%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s')
 
 project_id = os.getenv("PROJECTID")
 subscription_id = os.getenv("STOPSUB")
@@ -40,9 +40,8 @@ while True:
         if not transformedMessages.empty:
             transformedMessages = transformedMessages.dropna()
             transformedMessages = pd.json_normalize(transformedMessages['data'].apply(json.loads))
+            transformedMessages['direction'] = transformedMessages['direction'].astype(str)
             transformedMessages = vt.Transform(transformedMessages)
-
-
 
             trimetDB.create_tables()
             load_count = trimetDB.load_data_trips(transformedMessages, f"{datetime.date.today()}")

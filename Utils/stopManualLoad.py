@@ -13,11 +13,11 @@ import Modules.Publish as Publish
 
 #configures the error logging
 logging.basicConfig(filename=f'.\Logs\{datetime.date.today()}_error.log', level=logging.ERROR, 
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+                    format='%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s')
 
 
 stopPublisher = Publish.Pub(os.getenv("PROJECTID"), os.getenv("STOPTOPIC"))       
-folder_path = "./StopEvents"
+folder_path = os.path.join(project_root, "StopEvents")
 sensorReadings = 0
 if os.path.exists(folder_path):
     for dirpath, dirnames, filenames in os.walk(folder_path):
@@ -28,6 +28,7 @@ if os.path.exists(folder_path):
                     with open(file_path, 'r', encoding='utf-8') as f:
                         messages = pd.read_json(file_path)
                         sensorReadings += len(messages)
-                        stopPublisher.Publish_PubSub(messages)
+                        data = messages.to_dict(orient='records')
+                        stopPublisher.Publish_PubSub(data)
                 except Exception as e:
                     print(f"Error reading {file_path}: {e}")

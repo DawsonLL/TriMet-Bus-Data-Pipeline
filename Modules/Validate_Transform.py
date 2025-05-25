@@ -126,8 +126,9 @@ def Transform(messages):
         messages.rename(columns={'trip_number': 'trip_id', 'route_number': 'route_id', 'vehicle_number': 'vehicle_id'}, inplace=True)
         messages['direction'] = messages['direction'].replace({'1' : 'Out', '0' : 'Back'})
         messages['service_key'] = messages['service_key'].replace({'W' : 'Weekday', 'S' : 'Saturday', 'U': 'Sunday'})
-        
         return messages
+    else:
+        print(f"COLUMNS DO NOT MATCH, {messages.columns.tolist()}")
 #-----------------------------------------------------------------Assertions---------------------------------------------------------------------------
 
 # Check for null values in specified columns and drop rows with nulls if found
@@ -135,16 +136,18 @@ def assert_nulls(df):
 
     for column in df.columns.tolist():
         # Count non-null values and total values in the column
-        idNullCount = df[column].notnull().sum()
+        idNullCount = df[df[column] != 'nan'][column].notnull().sum()
         totalIdCount = len(df)
-
+    
         try:
             # Assert there are no nulls
             assert idNullCount == totalIdCount
         except AssertionError as e:
             # Print how many nulls were found and drop them
             print(f"Found {totalIdCount - idNullCount} null values in {column}!")
+            df = df[df[column] != 'nan']
             df = df.dropna(subset=[column])
+            
         
     return df
 
