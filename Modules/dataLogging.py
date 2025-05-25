@@ -1,7 +1,6 @@
 import pandas as pd
 import os
 
-
 def preLoad(data):
     
     if not os.path.exists("dataLog.csv"):

@@ -13,8 +13,8 @@ time.log
 toLoad.csv
 Patched_Data
 dbLog.csv
+ManualLog.csv
 StopEvents
 Logs
 *.log
 /StopEvents
-*.json
