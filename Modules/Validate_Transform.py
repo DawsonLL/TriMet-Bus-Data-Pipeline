@@ -121,9 +121,10 @@ def Transform(messages):
         messages.drop_duplicates(inplace=True)
 
         messages = messages[['vehicle_number', 'route_number', 'trip_id', 'service_key', 'direction']]
-
+        
         messages = assert_nulls(messages)
         messages.rename(columns={'route_number': 'route_id', 'vehicle_number': 'vehicle_id'}, inplace=True)
+        messages = assert_trip_id_greater_than_zero(messages)
         messages['direction'] = messages['direction'].replace({'1' : 'Out', '0' : 'Back', 1 : 'Out', 0 : 'Back'})
         messages['service_key'] = messages['service_key'].replace({'W' : 'Weekday', 'M': 'Weekday', 'S' : 'Saturday', 'U': 'Sunday'})
         messages['direction'] = messages['direction'].astype(str)
@@ -234,4 +235,15 @@ def assert_unique_vehicle_per_trip(df):
         # Fix by replacing with the most frequent (mode) VEHICLE_ID for each trip
         df["VEHICLE_ID"] = df.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].transform(lambda x: x.mode()[0])
         return df
+    return df
+
+def assert_trip_id_greater_than_zero(df):
+    trip_ids_numeric = pd.to_numeric(df['trip_id'], errors='coerce')
+    invalid_mask = (trip_ids_numeric <= 0) | trip_ids_numeric.isna()
+    lesser = invalid_mask.sum()
+    try:
+        assert lesser == 0
+    except AssertionError as e:
+        logging.info(f"{lesser} rows with trip_ids less than or equal to 0!" )
+        df = df[~invalid_mask]
     return df
