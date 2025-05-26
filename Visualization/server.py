@@ -1,6 +1,8 @@
 import os
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 
+# Run program: "python server.py"
+# this will ensure program properly adds the environment variable to the index.html file
 PORT = 8000
 API_KEY = os.getenv("MAPBOX_API_KEY", "")
 

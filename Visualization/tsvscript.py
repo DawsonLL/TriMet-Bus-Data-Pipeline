@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 import csv, json
 from geojson import Feature, FeatureCollection, Point
+
+# used to convert tsv files to JSON
 features = []
 
 with open('FILENAME.tsv', newline='') as csvfile:
