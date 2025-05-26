@@ -103,7 +103,7 @@ class TripDataLoader:
                 CREATE TYPE tripdir_type AS ENUM ('Out', 'Back', '0');
 
                 CREATE TABLE Trip (
-                    trip_id integer,
+                    trip_id integer PRIMARY KEY,
                     route_id integer,
                     vehicle_id integer,
                     service_key service_type,
@@ -190,12 +190,17 @@ class TripDataLoader:
         trip_buf = io.StringIO()
         trip_count = 0
         bc_count = 0
+        trip_seen = set()
         skipped_count = 0
 
         for index, row in data.iterrows():
             try:
-                trip_buf.write(f"{int(row['trip_id'])},{int(row['route_id'])},{int(row['vehicle_id'])},{row['service_key']},{row['direction']}\n")
-                trip_count += 1
+                trip_id = int(row['trip_id'])
+                # Trip: Avoid duplicates
+                if trip_id not in trip_seen:
+                    trip_seen.add(trip_id)
+                    trip_buf.write(f"{int(row['trip_id'])},{int(row['route_id'])},{int(row['vehicle_id'])},{row['service_key']},{row['direction']}\n")
+                    trip_count += 1
 
             except Exception as e:
                 logging.error(f"Trips copy error: {row} {e}")
@@ -207,6 +212,7 @@ class TripDataLoader:
             try:
                 cursor.copy_from(trip_buf, 'trip', sep=',', null='', columns=('trip_id', 'route_id', 'vehicle_id', 'service_key', 'direction'))
                 print(f"Copied rows into Trip")
+                logging.info(f"{trip_count} Rows Added")
             except Exception as e:
                 logging.error(f"An error occurred: {e}")     
 
