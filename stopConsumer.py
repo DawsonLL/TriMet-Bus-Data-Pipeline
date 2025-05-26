@@ -18,7 +18,7 @@ logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=
 
 project_id = os.getenv("PROJECTID")
 subscription_id = os.getenv("STOPSUB")
-timeout = 100  # seconds
+timeout = 1000  # seconds
 trimetSubscriber = Subscribe.Sub(project_id, subscription_id, timeout)
 dBConn = load.dBConnect(os.getenv("DBNAME"), os.getenv("DBUSERNAME"), os.getenv("DBPASSWORD"), os.getenv("HOSTNAME"))
 trimetDB = load.TripDataLoader(dBConn)
