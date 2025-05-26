@@ -64,7 +64,7 @@ def Transform(messages):
        'location_id', 'door', 'lift', 'ons', 'offs', 'estimated_load',
        'maximum_speed', 'train_mileage', 'pattern_distance',
        'location_distance', 'x_coordinate', 'y_coordinate', 'data_source',
-       'schedule_status']
+       'schedule_status', 'trip_id']
 
     if messages.columns.tolist() == columns_bc:
         # We need to pull out the nested data string from the JSON
@@ -120,12 +120,13 @@ def Transform(messages):
 
         messages.drop_duplicates(inplace=True)
 
-        messages = messages[['vehicle_number', 'route_number', 'trip_number', 'service_key', 'direction']]
+        messages = messages[['vehicle_number', 'route_number', 'trip_id', 'service_key', 'direction']]
 
         messages = assert_nulls(messages)
-        messages.rename(columns={'trip_number': 'trip_id', 'route_number': 'route_id', 'vehicle_number': 'vehicle_id'}, inplace=True)
+        messages.rename(columns={'route_number': 'route_id', 'vehicle_number': 'vehicle_id'}, inplace=True)
         messages['direction'] = messages['direction'].replace({'1' : 'Out', '0' : 'Back', 1 : 'Out', 0 : 'Back'})
         messages['service_key'] = messages['service_key'].replace({'W' : 'Weekday', 'M': 'Weekday', 'S' : 'Saturday', 'U': 'Sunday'})
+        messages['direction'] = messages['direction'].astype(str)
         messages['route_id'] = messages['route_id'].astype(int)
 
         return messages

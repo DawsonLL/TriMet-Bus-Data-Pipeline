@@ -4,11 +4,9 @@ import datetime
 import logging
 import Modules.dataLogging as log
 import Modules.Publish as Publish
-
 #configures the error logging
 logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=logging.ERROR, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
-
 #our base Url
 baseUrl = "https://busdata.cs.pdx.edu/api/getBreadCrumbs?vehicle_id="
 #reads vehicleids.txt and parses into a list for each id entry

@@ -40,8 +40,8 @@ while True:
         if not transformedMessages.empty:
             transformedMessages = transformedMessages.dropna()
             transformedMessages = pd.json_normalize(transformedMessages['data'].apply(json.loads))
-            transformedMessages['direction'] = transformedMessages['direction'].astype(str)
             transformedMessages = vt.Transform(transformedMessages)
+            
 
             trimetDB.create_tables()
             load_count = trimetDB.load_data_trips(transformedMessages, f"{datetime.date.today()}")
