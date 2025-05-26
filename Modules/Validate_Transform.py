@@ -126,6 +126,8 @@ def Transform(messages):
         messages.rename(columns={'trip_number': 'trip_id', 'route_number': 'route_id', 'vehicle_number': 'vehicle_id'}, inplace=True)
         messages['direction'] = messages['direction'].replace({'1' : 'Out', '0' : 'Back', 1 : 'Out', 0 : 'Back'})
         messages['service_key'] = messages['service_key'].replace({'W' : 'Weekday', 'M': 'Weekday', 'S' : 'Saturday', 'U': 'Sunday'})
+        messages['route_id'] = messages['route_id'].astype(int)
+
         return messages
     else:
         print(f"COLUMNS DO NOT MATCH, {messages.columns.tolist()}")
