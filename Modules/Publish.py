@@ -68,4 +68,4 @@ class Pub:
         for future in futures.as_completed(future_list):
             continue
 
-        #print(f"Published {publish_count} messages to {topic_path} in {run_time}.")
+     

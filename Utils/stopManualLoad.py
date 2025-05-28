@@ -10,11 +10,11 @@ sys.path.append(project_root)
 
 import Modules.dataLogging as log
 import Modules.Publish as Publish
-'''
+
 #configures the error logging
-logging.basicConfig(filename=f'.\Logs\{datetime.date.today()}_error.log', level=logging.ERROR, 
+logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=logging.INFO, 
                     format='%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s')
-'''
+
 if not os.path.exists("ManualLog.csv"):
     print("No ManualLog.csv detected.")
     df = pd.DataFrame(columns=["date", "tripcount"])

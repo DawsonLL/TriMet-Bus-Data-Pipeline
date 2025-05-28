@@ -67,14 +67,12 @@ def Transform(messages):
        'schedule_status', 'trip_id']
 
     if messages.columns.tolist() == columns_bc:
-        # We need to pull out the nested data string from the JSON
-        #messages = process_messages_in_chunks(messages)
+
 
         # Remove exact duplicates in place
         messages.drop_duplicates(inplace=True)
 
         # Each EVENT_NO_TRIP is assigned to only one VEHICLE_ID
-        # messages["VEHICLE_ID"] = messages.groupby('EVENT_NO_TRIP')['VEHICLE_ID'].transform(lambda x: x.mode()[0])
         messages = assert_unique_vehicle_per_trip(messages)
 
         # Perform individual validation in place
@@ -115,7 +113,7 @@ def Transform(messages):
 
         return messages
     
-
+    #transformation for stops events
     elif messages.columns.tolist() == columns_trips:
 
         messages.drop_duplicates(inplace=True)

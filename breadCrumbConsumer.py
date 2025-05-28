@@ -12,8 +12,9 @@ import Modules.Validate_Transform as vt
 
 
 #configures the error logging
-logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=logging.ERROR, 
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename=f'./Logs/{datetime.date.today()}_error.log', level=logging.INFO, 
+                    format='%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s')
+
 project_id = os.getenv("PROJECTID")
 subscription_id = os.getenv("BREADCRUMBSUB")
 timeout = 1000  # seconds
