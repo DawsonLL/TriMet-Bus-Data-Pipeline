@@ -1,0 +1,7 @@
+requests
+urllib
+google-cloud-pubsub
+pandas
+concurrent
+psycopg2-binary
+bs4
